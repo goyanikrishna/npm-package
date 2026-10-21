@@ -64,7 +64,7 @@ export const initializeBackend = async (config: IBackendConfig): Promise<IBootst
   const customRoles = configManager.getRoles();
   for (const r of customRoles) {
     if (r.name === 'super_admin') continue;
-    let existingRole = await roleService.getRoleByName(project.id, r.name);
+    const existingRole = await roleService.getRoleByName(project.id, r.name);
     if (!existingRole) {
       await roleService.createRole(project.id, {
         name: r.name,

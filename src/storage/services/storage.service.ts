@@ -38,7 +38,7 @@ export class StorageService {
     } else if (storageConfig.provider === 'r2') {
       this.provider = new R2StorageProvider(storageConfig);
     } else {
-      throw new StorageError(`Unsupported storage provider: ${(storageConfig as any).provider}`);
+      throw new StorageError(`Unsupported storage provider: ${(storageConfig as { provider?: string }).provider}`);
     }
 
     return this.provider;

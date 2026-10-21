@@ -15,7 +15,7 @@ export class ResendProvider implements IEmailProvider {
   public async sendEmail(options: ISendEmailOptions): Promise<void> {
     try {
       // Lazy load Resend SDK to make peer dependency optional
-      let ResendClient: any;
+      let ResendClient: typeof import('resend').Resend;
       try {
         const mod = await import('resend');
         ResendClient = mod.Resend;
@@ -32,7 +32,7 @@ export class ResendProvider implements IEmailProvider {
         subject: options.subject,
         html: options.html,
         text: options.text,
-        reply_to: options.replyTo,
+        replyTo: options.replyTo,
       });
 
       if (error) {

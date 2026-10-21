@@ -52,7 +52,7 @@ export class UserService {
 
 
   public sanitizeUser(user: User): Partial<User> {
-    const { password, ...safeUser } = user;
+    const { password: _password, ...safeUser } = user;
     return safeUser;
   }
 
