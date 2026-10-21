@@ -1,0 +1,1586 @@
+Task: Build a Fully Dynamic, Multi-Project Reusable Backend Package
+
+You are working inside an existing production codebase.
+
+The objective is to analyze the existing implementation and extract the common backend functionality into a fully reusable, configurable, multi-project NPM package.
+
+This package will be reused across multiple future projects.
+
+The package must NOT be designed specifically for the current project.
+
+The current project is only the reference implementation from which reusable functionality should be extracted.
+
+The final architecture must allow:
+
+Project A
+    ↓
+uses package
+
+Project B
+    ↓
+uses same package
+
+Project C
+    ↓
+uses same package
+
+without modifying the package source code for each project.
+
+1. IMPORTANT CORE REQUIREMENT
+
+Everything that can reasonably differ between projects MUST be dynamic/configurable.
+
+Do NOT hardcode project-specific:
+
+project name
+
+project ID
+
+roles
+
+user statuses
+
+languages
+
+branding
+
+email provider
+
+email templates
+
+SMTP configuration
+
+Resend configuration
+
+AWS S3 configuration
+
+Cloudflare R2 configuration
+
+storage bucket
+
+storage paths
+
+user fields
+
+profile fields
+
+validation rules
+
+password rules
+
+JWT configuration
+
+token expiration
+
+frontend URLs
+
+API URLs
+
+Super Admin credentials
+
+Super Admin email
+
+Super Admin name
+
+permissions
+
+The package should provide sensible defaults only where appropriate.
+
+Everything else must be configurable.
+
+2. FIRST: FULL EXISTING CODEBASE AUDIT
+
+Before implementing anything, inspect the existing project completely.
+
+Analyze:
+
+Authentication
+User Management
+Roles
+Permissions
+Project/Company relationships
+Password handling
+JWT/session handling
+Email
+Email templates
+File upload
+File deletion
+Storage
+Validation
+Database entities
+Database migrations
+TypeORM configuration
+Environment configuration
+Error handling
+Middleware
+Guards
+Controllers
+Services
+Routes
+Tests
+Utilities
+
+For each piece, classify it as:
+
+COMMON
+CONFIGURABLE
+PROJECT_SPECIFIC
+EXTENSION_POINT
+
+Do not blindly copy the existing implementation.
+
+Identify what needs to be redesigned for reusability.
+
+3. MULTI-PROJECT ARCHITECTURE
+
+The package MUST support multiple projects.
+
+A project is a first-class entity.
+
+Every project must have a unique identifier.
+
+Recommended structure:
+
+projects
+────────────────────────
+id
+name
+slug
+status
+created_at
+updated_at
+
+The exact fields should be determined after inspecting the existing project.
+
+4. PROJECT CREATION
+
+The package consumer should initialize/register a project using a unique project name.
+
+Example:
+
+initializeBackend({
+  project: {
+    name: 'therapist',
+  },
+  ...
+});
+
+The package must create or resolve a unique:
+
+project_id
+
+for that project.
+
+The generated project_id must then be used as the tenant/project reference for users and other package-owned entities.
+
+Example:
+
+project
+   │
+   └── project_id
+          │
+          ├── users
+          ├── password reset records
+          ├── sessions/tokens
+          └── other package-owned records
+
+Do NOT use project name as the database foreign key.
+
+Use a stable unique ID.
+
+Project name/slug can be changed later without breaking references.
+
+5. PROJECT ISOLATION
+
+Every user MUST belong to a project.
+
+User records must contain:
+
+project_id
+
+The package must ensure that users from one project cannot access users from another project.
+
+Every user-related query must be project-aware.
+
+Example:
+
+project A
+    ↓
+user A1
+user A2
+
+project B
+    ↓
+user B1
+user B2
+
+A request authenticated under project A must NEVER be able to access:
+
+user B1
+user B2
+
+unless explicitly authorized through a future cross-project administrative mechanism.
+
+Do not rely only on frontend filtering.
+
+Project isolation must be enforced at the backend/service/repository level.
+
+6. FINAL USER MODEL
+
+The base User model must use these fields:
+
+id
+project_id
+first_name
+last_name
+phone
+email
+password
+avatar
+role
+status
+language
+created_by
+created_at
+updated_by
+updated_at
+deleted_by
+deleted_at
+
+Treat this as the current required base model.
+
+Important:
+
+created_by
+updated_by
+deleted_by
+
+must correctly reference the user who performed the action where applicable.
+
+For system-created records, support a safe system identifier/null strategy.
+
+Document the chosen approach.
+
+7. USER TABLE MUST BE DYNAMIC
+
+Although the package has a base User model, the package MUST allow consuming projects to configure additional fields.
+
+Example:
+
+Project A:
+
+userFields: [
+  {
+    name: 'job_title',
+    type: 'string',
+  },
+  {
+    name: 'company_id',
+    type: 'uuid',
+  }
+]
+
+Project B:
+
+userFields: [
+  {
+    name: 'employee_id',
+    type: 'string',
+  },
+  {
+    name: 'department',
+    type: 'string',
+  },
+  {
+    name: 'joining_date',
+    type: 'date',
+  }
+]
+
+Project C:
+
+userFields: [
+  {
+    name: 'date_of_birth',
+    type: 'date',
+  },
+  {
+    name: 'is_verified',
+    type: 'boolean',
+  }
+]
+
+The package source must NOT be changed for each project.
+
+8. NO JSON FOR USER FIELDS
+
+Do NOT store dynamic user fields inside:
+
+metadata
+extra_data
+profile JSON
+settings JSON
+
+The goal is proper SQL structure.
+
+Dynamic fields must be represented using real database columns/tables with proper types.
+
+They must remain:
+
+queryable
+
+indexable
+
+type-safe
+
+migration-friendly
+
+compatible with TypeORM
+
+compatible with SQL constraints
+
+9. DECIDE USERS VS USER_PROFILES DYNAMICALLY
+
+Design a proper strategy for determining whether a configurable field belongs to:
+
+users
+
+or:
+
+user_profiles
+
+A recommended architecture is:
+
+users
+────────────────────
+core authentication
+identity
+project relationship
+role
+status
+audit fields
+
+
+user_profiles
+────────────────────
+project-specific profile fields
+
+However, do not blindly follow this recommendation.
+
+Analyze the existing implementation and determine the best architecture.
+
+The final architecture must support future fields without modifying the package source.
+
+10. DYNAMIC FIELD CONFIGURATION
+
+Define a strong configuration model.
+
+Example:
+
+type UserFieldType =
+  | 'string'
+  | 'text'
+  | 'integer'
+  | 'decimal'
+  | 'boolean'
+  | 'date'
+  | 'datetime'
+  | 'uuid'
+  | 'enum';
+
+Example:
+
+userFields: [
+  {
+    name: 'employee_id',
+    type: 'string',
+    nullable: false,
+    unique: true,
+    indexed: true,
+  },
+  {
+    name: 'department',
+    type: 'string',
+    nullable: true,
+  },
+  {
+    name: 'joining_date',
+    type: 'date',
+    nullable: true,
+  }
+]
+
+Field names MUST use:
+
+snake_case
+
+Validate field names before generating migrations.
+
+Do not allow SQL injection through dynamic field configuration.
+
+11. DYNAMIC MIGRATION SYSTEM
+
+Dynamic fields MUST NOT create database columns at runtime.
+
+The package must provide a migration-generation mechanism.
+
+Example:
+
+npx company-backend generate-migration
+
+or an appropriate CLI based on the existing architecture.
+
+The flow should be:
+
+Project configuration
+        ↓
+Dynamic field definitions
+        ↓
+Migration generation
+        ↓
+Developer reviews migration
+        ↓
+Migration executed
+        ↓
+Database updated
+
+Never silently modify production schema.
+
+12. DYNAMIC ROLES
+
+Roles MUST be fully configurable per project.
+
+Do NOT hardcode:
+
+MANUFACTURER
+ADMIN
+THERAPIST
+PATIENT
+
+inside the package.
+
+Example:
+
+roles: [
+  {
+    name: 'admin',
+    permissions: [...]
+  },
+  {
+    name: 'manager',
+    permissions: [...]
+  },
+  {
+    name: 'user',
+    permissions: [...]
+  }
+]
+
+The exact role configuration should be flexible.
+
+13. SUPER ADMIN IS REQUIRED
+
+Every project MUST have a default Super Admin.
+
+When a new project is initialized:
+
+Create Project
+      ↓
+Create default Super Admin
+      ↓
+Assign Super Admin role
+      ↓
+Super Admin belongs to that project
+
+The Super Admin must NOT be a global user unless explicitly designed otherwise.
+
+Each project gets its own Super Admin.
+
+Example:
+
+Project A
+ └── Super Admin A
+
+Project B
+ └── Super Admin B
+
+Project C
+ └── Super Admin C
+
+14. SUPER ADMIN CONFIGURATION
+
+The package must allow the consuming project to configure the initial Super Admin.
+
+Example:
+
+super_admin: {
+  email: 'admin@example.com',
+  first_name: 'Admin',
+  last_name: 'User',
+  password: '...',
+}
+
+However:
+
+Never hardcode credentials.
+
+Prefer environment variables or secure initialization input.
+
+Never expose the password in logs.
+
+Do not store plaintext passwords.
+
+Hash the password using the package's password service.
+
+If credentials are not provided, define a secure setup mechanism rather than silently creating an insecure default password.
+
+15. SUPER ADMIN USER MANAGEMENT
+
+The Super Admin must be able to:
+
+Create users
+View user
+List users
+Update users
+Delete users
+
+Recommended endpoints:
+
+POST   /users
+GET    /users
+GET    /users/:id
+PATCH  /users/:id
+DELETE /users/:id
+
+All operations MUST be scoped to the current project.
+
+Example:
+
+Super Admin of Project A
+        ↓
+Can manage Project A users
+
+Cannot manage Project B users
+
+16. PERMISSION SYSTEM
+
+Do not only implement:
+
+if role === 'super_admin'
+
+throughout the codebase.
+
+Create a reusable permission system.
+
+Example permissions:
+
+users:create
+users:view
+users:list
+users:update
+users:delete
+profile:view
+profile:update
+
+Super Admin should receive all required user-management permissions by default.
+
+Projects should be able to define additional roles and permissions.
+
+The authorization layer should support:
+
+Role
+   ↓
+Permissions
+   ↓
+Authorization check
+
+17. USER MANAGEMENT SECURITY
+
+Super Admin/user management must include:
+
+project isolation
+
+authorization
+
+validation
+
+duplicate email handling
+
+protected Super Admin rules
+
+audit fields
+
+soft deletion where configured
+
+Define whether a Super Admin can:
+
+delete another Super Admin
+remove their own Super Admin role
+delete themselves
+change another Super Admin
+
+Do not leave these behaviors ambiguous.
+
+Make them configurable where practical.
+
+18. REGISTRATION
+
+Provide:
+
+POST /auth/register
+
+Registration must be project-aware.
+
+A user created through registration MUST belong to the correct:
+
+project_id
+
+Never allow the client to freely submit an arbitrary project_id and create a user in another project.
+
+Project context must come from trusted configuration/authentication/request context.
+
+Support:
+
+email
+
+password
+
+dynamic user fields
+
+validation
+
+password hashing
+
+duplicate email detection
+
+configurable default role
+
+configurable default status
+
+19. LOGIN
+
+Provide:
+
+POST /auth/login
+
+Login must always be project-aware.
+
+If the same email exists in multiple projects, the package must have a clear mechanism to identify the correct project.
+
+For example:
+
+project identifier
++
+email
++
+password
+
+or a trusted project context.
+
+Do NOT assume email is globally unique across every project unless the database design explicitly enforces that.
+
+Prefer uniqueness such as:
+
+(project_id, email)
+
+if that matches the multi-project architecture.
+
+20. FORGOT PASSWORD
+
+Provide:
+
+POST /auth/forgot-password
+
+Flow:
+
+Project Context
+      ↓
+Email
+      ↓
+Find user within project
+      ↓
+Generate secure token
+      ↓
+Store secure token
+      ↓
+Send email
+
+Never allow a reset token generated for Project A to reset a Project B user.
+
+Do not expose whether an email exists.
+
+21. RESET PASSWORD
+
+Provide:
+
+POST /auth/reset-password
+
+Support:
+
+secure token validation
+
+project validation
+
+expiration
+
+one-time usage
+
+password validation
+
+password hashing
+
+session/token invalidation where supported
+
+22. PROFILE
+
+Provide:
+
+GET /auth/profile
+PATCH /auth/profile
+
+Profile response should include:
+
+base user fields
++
+configured project-specific fields
+
+Never expose:
+
+password
+reset tokens
+internal security fields
+
+23. CHANGE PASSWORD
+
+Provide:
+
+POST /auth/change-password
+
+Flow:
+
+Current Password
+       ↓
+Verify
+       ↓
+Validate New Password
+       ↓
+Hash
+       ↓
+Update
+
+Support session invalidation where applicable.
+
+24. LOGOUT
+
+Provide:
+
+POST /auth/logout
+
+Support the project's configured authentication strategy.
+
+If JWT is stateless, clearly implement/document the appropriate invalidation strategy.
+
+Do not falsely claim that deleting a frontend token invalidates a backend JWT.
+
+25. DELETE ACCOUNT
+
+Provide:
+
+DELETE /auth/account
+
+Support:
+
+soft delete
+
+optional hard delete
+
+password/confirmation
+
+audit fields
+
+cleanup hooks
+
+When deleted:
+
+deleted_by
+deleted_at
+
+must be populated correctly.
+
+26. AUDIT FIELDS
+
+The base user table contains:
+
+created_by
+created_at
+updated_by
+updated_at
+deleted_by
+deleted_at
+
+Implement these properly.
+
+Examples:
+
+created_by = Super Admin ID
+updated_by = authenticated user ID
+deleted_by = Super Admin ID
+
+For system-generated records:
+
+created_by = system/null
+
+depending on the selected database strategy.
+
+The package must provide a consistent mechanism for populating audit fields.
+
+27. EMAIL SERVICE
+
+Create a provider abstraction.
+
+Support:
+
+SMTP
+Resend
+
+Example:
+
+email: {
+  provider: 'smtp',
+  ...
+}
+
+or:
+
+email: {
+  provider: 'resend',
+  ...
+}
+
+Authentication logic must never depend directly on SMTP or Resend.
+
+28. DYNAMIC EMAIL BRANDING
+
+Email templates must be reusable.
+
+Only project configuration should change:
+
+branding: {
+  project_name,
+  logo_url,
+  primary_color,
+  header_text,
+  footer_text,
+  company_name,
+  support_email,
+  frontend_url
+}
+
+Support common templates:
+
+Welcome
+Email Verification
+Forgot Password
+Password Reset
+Password Changed
+Account Deleted
+
+A project must be able to use the same package while displaying its own:
+
+Project Name
+Logo
+Header
+Footer
+Support information
+Colors
+Links
+
+29. FILE STORAGE
+
+Create a common:
+
+StorageProvider
+
+Support:
+
+AWS S3
+Cloudflare R2
+
+The consuming application should not need to change its business logic when switching providers.
+
+30. FILE OPERATIONS
+
+Support:
+
+upload
+remove/delete
+get URL
+exists
+metadata
+
+Support:
+
+image
+pdf
+doc
+docx
+xls
+xlsx
+
+Validate:
+
+MIME type
+extension
+file size
+
+All limits must be configurable.
+
+31. STORAGE CONFIGURATION
+
+Example:
+
+storage: {
+  provider: 'r2',
+  bucket: '...',
+  region: '...',
+  ...
+}
+
+or:
+
+storage: {
+  provider: 's3',
+  bucket: '...',
+  region: '...',
+  ...
+}
+
+Never hardcode provider credentials.
+
+32. FILE PATHS MUST BE PROJECT-AWARE
+
+Storage paths must include the project context.
+
+For example:
+
+{project_id}/users/{user_id}/avatar/{filename}
+
+or:
+
+{project_id}/{resource}/{resource_id}/{filename}
+
+This prevents files from different projects from being mixed.
+
+33. COMPLETE CONFIGURATION SHOULD BE DYNAMIC
+
+Design one central configuration object.
+
+Example:
+
+initializeBackend({
+  project: {
+    name: 'therapist',
+  },
+
+  database: {
+    ...
+  },
+
+  auth: {
+    jwt: {
+      ...
+    },
+    password: {
+      ...
+    }
+  },
+
+  users: {
+    fields: [
+      {
+        name: 'job_title',
+        type: 'string',
+        nullable: true,
+      }
+    ]
+  },
+
+  roles: [
+    {
+      name: 'super_admin',
+      permissions: [
+        'users:create',
+        'users:view',
+        'users:list',
+        'users:update',
+        'users:delete'
+      ]
+    },
+    {
+      name: 'user',
+      permissions: []
+    }
+  ],
+
+  super_admin: {
+    ...
+  },
+
+  email: {
+    provider: 'resend',
+    ...
+  },
+
+  branding: {
+    ...
+  },
+
+  storage: {
+    provider: 'r2',
+    ...
+  }
+});
+
+The exact API can be improved based on the existing codebase.
+
+34. PACKAGE MUST NOT OWN BUSINESS LOGIC
+
+The package should own:
+
+Authentication
+User management
+Project management
+Authorization
+Password management
+Email abstraction
+Storage abstraction
+Validation
+Audit behavior
+Common security
+
+The package must NOT own:
+
+Therapist-specific logic
+Jewellery-specific logic
+Appointment logic
+Patient-specific business rules
+Company-specific business rules
+Project-specific workflows
+
+Projects consume the package and build their business logic on top of it.
+
+35. FRAMEWORK ARCHITECTURE
+
+The current project appears to use:
+
+Node.js
+TypeScript
+TypeORM
+
+Use the existing stack as the reference implementation.
+
+Separate:
+
+Core business logic
+        ↓
+Infrastructure providers
+        ↓
+HTTP/API adapters
+
+where practical.
+
+Do not tightly couple the package unnecessarily to Express/Nest/Fastify/etc.
+
+If the existing project requires framework-specific integration, isolate it in adapters.
+
+36. PACKAGE STRUCTURE
+
+Design a clean architecture similar to:
+
+src/
+├── project/
+│   ├── entities/
+│   ├── services/
+│   ├── repositories/
+│   └── types/
+│
+├── auth/
+│   ├── services/
+│   ├── controllers/
+│   ├── validators/
+│   ├── strategies/
+│   └── types/
+│
+├── user/
+│   ├── entities/
+│   ├── services/
+│   ├── repositories/
+│   ├── profile/
+│   └── types/
+│
+├── role/
+├── permission/
+├── password/
+├── email/
+│   ├── providers/
+│   ├── templates/
+│   └── services/
+│
+├── storage/
+│   ├── providers/
+│   ├── validators/
+│   └── services/
+│
+├── database/
+│   ├── migrations/
+│   └── dynamic-fields/
+│
+├── audit/
+├── validation/
+├── errors/
+├── config/
+├── hooks/
+├── cli/
+└── index.ts
+
+Adjust based on the existing project.
+
+37. PUBLIC PACKAGE API
+
+The consuming project should have a simple API.
+
+Example:
+
+import {
+  initializeBackend,
+  AuthModule,
+  UserModule,
+  ProjectModule,
+  StorageModule,
+  EmailModule,
+} from '@company/backend-core';
+
+Do not require consumers to import:
+
+@company/backend-core/src/...
+
+Expose only intentional public APIs.
+
+38. DATABASE OWNERSHIP
+
+Clearly document which tables belong to the package.
+
+Potential package-owned tables:
+
+projects
+users
+user_profiles
+roles
+permissions
+role_permissions
+password_reset_tokens
+sessions
+
+Do not create tables that are only relevant to a specific project's business domain.
+
+39. DATABASE CONSTRAINTS
+
+Design proper constraints.
+
+For example, if appropriate:
+
+UNIQUE(project_id, email)
+
+rather than globally:
+
+UNIQUE(email)
+
+because multiple projects may legitimately have users with the same email.
+
+Also consider:
+
+project_id foreign key
+role/project relationship
+indexes
+soft-delete behavior
+audit foreign keys
+
+Document every important constraint.
+
+40. PROJECT-SCOPED ROLES
+
+Roles must also be project-aware if the architecture requires project-specific roles.
+
+For example:
+
+Project A
+ ├── super_admin
+ ├── therapist
+ └── patient
+
+Project B
+ ├── super_admin
+ ├── manager
+ └── employee
+
+Do not assume every project has the same role list.
+
+The only mandatory concept is:
+
+Super Admin
+
+Every project must have a Super Admin with full user-management capabilities.
+
+41. SUPER ADMIN BOOTSTRAPPING
+
+Create a safe bootstrap process.
+
+Example:
+
+Create project
+      ↓
+Create project roles
+      ↓
+Create Super Admin role
+      ↓
+Create Super Admin user
+      ↓
+Hash password
+      ↓
+Assign project_id
+      ↓
+Assign role
+
+The process must be:
+
+idempotent
+
+transactional where possible
+
+safe to retry
+
+safe against duplicate Super Admin creation
+
+If the bootstrap process is run twice, it must not create duplicate default roles/users unexpectedly.
+
+42. SECURITY
+
+Audit and improve:
+
+password hashing
+JWT security
+token expiration
+refresh tokens
+password reset tokens
+account enumeration
+brute force protection
+rate limiting hooks
+authorization
+project isolation
+file upload security
+MIME validation
+path traversal
+sensitive logging
+secret management
+
+Never log:
+
+password
+JWT
+reset token
+API key
+SMTP credentials
+Resend API key
+AWS credentials
+R2 credentials
+
+43. ERROR HANDLING
+
+Provide reusable typed errors:
+
+ProjectNotFoundError
+ProjectAlreadyExistsError
+InvalidCredentialsError
+EmailAlreadyExistsError
+UserNotFoundError
+UnauthorizedError
+ForbiddenError
+InvalidResetTokenError
+ExpiredResetTokenError
+InvalidFileTypeError
+FileTooLargeError
+StorageError
+EmailDeliveryError
+
+Map these appropriately to HTTP responses.
+
+Do not expose internal errors.
+
+44. VALIDATION
+
+Dynamic user fields must participate in validation.
+
+For example:
+
+{
+  name: 'employee_id',
+  type: 'string',
+  required: true,
+  min_length: 3,
+  max_length: 50
+}
+
+Support project-specific validation without changing package source.
+
+45. TESTING
+
+Create comprehensive automated tests.
+
+Project
+
+project creation
+duplicate project
+project isolation
+project bootstrap
+Super Admin creation
+idempotent bootstrap
+
+Authentication
+
+register
+login
+forgot password
+reset password
+profile
+profile update
+change password
+logout
+delete account
+
+User Management
+
+create user
+list users
+get user
+update user
+delete user
+cross-project access prevention
+Super Admin authorization
+permission checks
+
+Dynamic Fields
+
+string
+text
+integer
+decimal
+boolean
+date
+datetime
+uuid
+enum
+required
+nullable
+unique
+indexed
+invalid field name
+cross-project isolation
+
+Email
+
+SMTP
+Resend
+branding
+templates
+provider failure
+
+Storage
+
+S3
+R2
+upload
+delete
+replace
+invalid MIME
+invalid extension
+size limit
+project-specific paths
+
+46. BACKWARD COMPATIBILITY
+
+The current project already works.
+
+Do not unnecessarily break:
+
+APIs
+
+frontend integrations
+
+database data
+
+existing authentication
+
+existing response formats
+
+Before changing anything, identify breaking changes.
+
+If migration is required, create a safe migration plan.
+
+Never run destructive migrations automatically.
+
+47. DELIVERABLES
+
+At completion provide:
+
+A. Architecture
+
+Explain the complete package architecture.
+
+B. Multi-project design
+
+Explain:
+
+How project is created
+How project_id is generated
+How project_id is passed
+How users are scoped
+How roles are scoped
+How authentication identifies project
+How project isolation is enforced
+
+C. User architecture
+
+Explain:
+
+users
+user_profiles
+dynamic fields
+field configuration
+migration generation
+
+D. Super Admin architecture
+
+Explain:
+
+bootstrap
+role
+permissions
+user management
+security restrictions
+
+E. Configuration
+
+Provide a complete example configuration for a new project.
+
+F. Email
+
+Show SMTP and Resend configuration.
+
+G. Storage
+
+Show S3 and R2 configuration.
+
+H. Migration
+
+Explain how an existing project moves to the package.
+
+I. Testing
+
+Provide test coverage and remaining gaps.
+
+J. Package build
+
+Verify:
+
+npm run build
+npm run test
+npm pack
+
+or equivalent commands for the existing package manager.
+
+48. FINAL NON-NEGOTIABLE RULES
+
+DO NOT:
+
+hardcode project names
+
+hardcode project IDs
+
+hardcode roles
+
+hardcode statuses unnecessarily
+
+hardcode branding
+
+hardcode SMTP
+
+hardcode Resend
+
+hardcode S3
+
+hardcode R2
+
+hardcode project-specific user fields
+
+store dynamic user fields in JSON
+
+allow arbitrary client-supplied project_id
+
+allow cross-project user access
+
+create database columns dynamically at runtime
+
+expose passwords/tokens
+
+use any unnecessarily
+
+duplicate authentication logic
+
+modify production schema silently
+
+tightly couple business logic to the package
+
+The architecture must follow:
+
+                 REUSABLE PACKAGE
+                        │
+        ┌───────────────┼────────────────┐
+        ↓               ↓                ↓
+     PROJECT          CONFIG          EXTENSIONS
+        │               │                │
+        ↓               ↓                ↓
+  project_id        roles             hooks
+  business logic    user fields       providers
+  domain logic      branding          custom rules
+                   email
+                   storage
+
+The package must be reusable across multiple completely different projects.
+
+A new project should be able to:
+
+Install package
+      ↓
+Create/register project
+      ↓
+Generate project_id
+      ↓
+Configure roles
+      ↓
+Configure dynamic user fields
+      ↓
+Configure Super Admin
+      ↓
+Configure email provider
+      ↓
+Configure storage provider
+      ↓
+Generate/review migrations
+      ↓
+Run migrations
+      ↓
+Start using authentication and user management
+
+without modifying the package source code.
+
+The ultimate goal is to create a company-wide backend foundation that can be reused in every future project.
