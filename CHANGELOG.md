@@ -2,6 +2,15 @@
 
 All notable changes to `node-backend-toolkit` will be documented in this file.
 
+## [1.0.1] - 2026-10-23
+
+### Enhanced
+- Standardized package name to unscoped `node-backend-toolkit`.
+- Added MIT `LICENSE` file.
+- Added repository, issues, and homepage links pointing to GitHub.
+- Enhanced `README.md` with Shields.io status badges, Mermaid architecture diagram, and feature matrix.
+- Streamlined `prepublishOnly` build script.
+
 ## [1.0.0] - 2026-10-16
 
 ### Added

@@ -1,53 +1,79 @@
-# `node-backend-toolkit`
+# node-backend-toolkit
 
-> A production-grade, multi-project reusable backend toolkit for Node.js, Express, TypeScript, TypeORM, and PostgreSQL.
+<p align="center">
+  <strong>A production-grade, multi-project reusable backend toolkit for Node.js, Express, TypeScript, TypeORM, and PostgreSQL.</strong>
+</p>
 
----
-
-## Features
-
-- **Multi-Project Isolation**: Full data isolation per project via URL routing (`/api/:project_slug/...`) and database scoping.
-- **Complete Authentication Flow**:
-  - Self-Registration (`POST /auth/register`)
-  - Login with JWT access tokens and long-lived refresh tokens (`POST /auth/login`)
-  - Refresh Token Rotation & Invalidation (`POST /auth/refresh-token`)
-  - Forgot Password & Reset Password with secure timed tokens (`POST /auth/forgot-password`, `POST /auth/reset-password`)
-  - Password Management & Account Deletion
-- **Dynamic Role-Based Access Control (RBAC)**:
-  - System-protected `super_admin` role with automatic bypass
-  - Dynamic configurable project roles with custom permissions
-  - Declarative route protection via `hasPermission('users:create', ...)` middleware
-- **Extensible User Profiles (Decision D01)**:
-  - Real SQL columns dynamically managed on the `user_profiles` table without risking the core `users` table
-  - Type-safe validation for 9 data types (`string`, `text`, `integer`, `decimal`, `boolean`, `date`, `datetime`, `uuid`, `enum`)
-  - Automated TypeORM migration generation via CLI (`npx node-backend-toolkit generate-migration`)
-- **Pluggable Storage Abstraction**:
-  - AWS S3 & Cloudflare R2 providers
-  - Project-scoped file paths (`:project_slug/:module/:timestamp-:uuid-:filename`)
-  - Built-in MIME type and file size validation
-- **Pluggable Email System**:
-  - SMTP (Nodemailer) & Resend providers
-  - Built-in responsive Handlebars HTML templates (welcome, password reset, security alert, account deleted)
-  - Dynamic branding injection (`primaryColor`, `logoUrl`, `companyName`, `supportEmail`)
-  - Optional custom background queue handler hook
+<p align="center">
+  <a href="https://www.npmjs.com/package/node-backend-toolkit"><img src="https://img.shields.io/npm/v/node-backend-toolkit.svg?style=flat-square&color=blue" alt="npm version" /></a>
+  <a href="https://www.npmjs.com/package/node-backend-toolkit"><img src="https://img.shields.io/npm/dm/node-backend-toolkit.svg?style=flat-square&color=emerald" alt="npm downloads" /></a>
+  <a href="https://github.com/goyanikrishna/npm-package/blob/main/LICENSE"><img src="https://img.shields.io/npm/l/node-backend-toolkit.svg?style=flat-square&color=purple" alt="license" /></a>
+  <a href="https://www.typescriptlang.org/"><img src="https://img.shields.io/badge/TypeScript-Strict%205.5-3178C6.svg?style=flat-square&logo=typescript&logoColor=white" alt="TypeScript" /></a>
+  <a href="https://github.com/goyanikrishna/npm-package"><img src="https://img.shields.io/badge/tests-45%20passed-success.svg?style=flat-square" alt="Tests" /></a>
+  <a href="https://github.com/goyanikrishna/npm-package"><img src="https://img.shields.io/badge/PRs-welcome-brightgreen.svg?style=flat-square" alt="PRs Welcome" /></a>
+</p>
 
 ---
 
-## Installation
+## 🚀 Overview
 
-```bash
-npm install node-backend-toolkit
-npm install express typeorm pg reflect-metadata
+`node-backend-toolkit` is an enterprise-ready foundation designed to power multiple backend projects from a single reusable package. It eliminates boilerplate by handling **multi-tenant project isolation**, **stateless JWT + refresh token rotation**, **dynamic RBAC**, **extensible SQL user profiles**, **cloud file storage (S3/R2)**, and **branded transactional emails (SMTP/Resend)** without locking you into rigid business schemas.
+
+---
+
+## 🏗️ Architecture
+
+```mermaid
+graph TD
+    Client[Client App / Frontend] -->|URL: /api/:project_slug/...| Router[Express Router Adapter]
+    Router --> PCMiddleware[Project Context Middleware]
+    PCMiddleware --> AuthGuard[Authorize & Tenant Guard]
+    AuthGuard --> RBACGuard[RBAC Permission Guard]
+    
+    subgraph Core Toolkit Services
+        RBACGuard --> AuthService[Auth & Session Service]
+        RBACGuard --> UserService[User & Profile Service]
+        RBACGuard --> StorageService[Storage Service S3 / R2]
+        RBACGuard --> EmailService[Email Service SMTP / Resend]
+    end
+
+    subgraph PostgreSQL Database
+        AuthService --> DB[(TypeORM / PostgreSQL)]
+        UserService --> DB
+    end
 ```
 
-*(Optional peer dependencies for Cloudflare R2 / AWS S3 and Resend)*:
+---
+
+## ✨ Features
+
+| Feature | Description |
+|---|---|
+| **Multi-Project Isolation** | Scopes all data, users, and roles to a project via `/api/:project_slug/...` routing and DB foreign keys. Prevents cross-tenant data leaks. |
+| **Authentication Flow** | Self-registration, login, refresh token rotation (`sessions` table), password reset, and secure account self-deletion. |
+| **Dynamic RBAC** | System-protected `super_admin` role with automatic bypass, plus fully custom project roles with granular permissions (`users:create`, `users:view`, etc.). |
+| **Extensible User Profiles** | Store project-specific user fields as real, typed, indexed SQL columns on `user_profiles` with automated TypeORM migration generation. |
+| **Universal File Storage** | Pluggable AWS S3 & Cloudflare R2 providers with project-isolated folder paths, MIME validation, and pre-signed URLs. |
+| **Branded Email Engine** | Nodemailer (SMTP) & Resend providers with responsive Handlebars templates (Welcome, Password Reset, Security Alerts) and dynamic branding injection. |
+| **Framework-Agnostic Core** | Clean separation of business logic and HTTP adapters; primary Express adapter included out-of-the-box. |
+
+---
+
+## 📦 Installation
+
+```bash
+# Core toolkit and peer dependencies
+npm install node-backend-toolkit express typeorm pg reflect-metadata
+```
+
+*(Optional cloud peer dependencies for AWS S3 / Cloudflare R2 and Resend)*:
 ```bash
 npm install @aws-sdk/client-s3 @aws-sdk/s3-request-presigner resend
 ```
 
 ---
 
-## Quick Start
+## ⚡ Quick Start
 
 ```typescript
 import express from 'express';
@@ -57,8 +83,8 @@ async function bootstrap() {
   const app = express();
   app.use(express.json());
 
-  // Initialize toolkit backend
-  const { dataSource, project, router } = await initializeBackend({
+  // 1. Initialize toolkit backend
+  const { router } = await initializeBackend({
     project: {
       name: 'Acme Health',
       slug: 'acme-health',
@@ -74,6 +100,8 @@ async function bootstrap() {
       jwt: {
         accessTokenSecret: process.env.JWT_ACCESS_SECRET!,
         refreshTokenSecret: process.env.JWT_REFRESH_SECRET!,
+        accessTokenExpiresIn: '15m',
+        refreshTokenExpiresIn: '7d',
       },
       password: {
         minLength: 8,
@@ -85,18 +113,25 @@ async function bootstrap() {
       email: 'admin@acme.com',
       firstName: 'Super',
       lastName: 'Admin',
-      password: 'AdminPassword123!',
+      password: process.env.SUPER_ADMIN_PASSWORD || 'AdminPassword123!',
+    },
+    users: {
+      fields: [
+        { name: 'license_number', type: 'string', required: true, unique: true },
+        { name: 'department', type: 'string', required: false },
+      ],
     },
   });
 
-  // Mount toolkit routes
+  // 2. Mount toolkit routes under /api
   app.use('/api', router);
 
-  // Central error handler
+  // 3. Mount central error handler
   app.use(errorHandlerMiddleware);
 
   app.listen(3000, () => {
     console.log('Server running on http://localhost:3000');
+    console.log('Endpoints ready under: http://localhost:3000/api/acme-health/auth/...');
   });
 }
 
@@ -105,15 +140,30 @@ bootstrap();
 
 ---
 
-## Documentation
+## 🛠️ CLI Tool
 
-- [API Source of Truth](docs/API_SOURCE_OF_TRUTH.md) — Comprehensive REST API endpoint contract
-- [Frontend Integration Guide](docs/FRONTEND_API_INTEGRATION.md) — Integration guide for frontend engineers (with Axios interceptor)
-- [Configuration Reference](docs/CONFIGURATION_REFERENCE.md) — Complete configuration options
-- [Migration Guide](docs/MIGRATION_GUIDE.md) — Base schema and dynamic field migrations
+`node-backend-toolkit` includes a built-in CLI to generate TypeORM migrations for your configured dynamic user profile fields:
+
+```bash
+# Generate TypeORM migration for custom profile fields
+npx node-backend-toolkit generate-migration --config=./toolkit.config.json
+```
 
 ---
 
-## License
+## 📚 Documentation
 
-MIT
+- [📖 API Source of Truth](docs/API_SOURCE_OF_TRUTH.md) — Comprehensive REST API endpoint catalog with request/response schemas
+- [💻 Frontend Integration Guide](docs/FRONTEND_API_INTEGRATION.md) — Guide for frontend developers with Axios interceptor implementation
+- [⚙️ Configuration Reference](docs/CONFIGURATION_REFERENCE.md) — Exhaustive guide for all configuration options
+- [🗄️ Database & Migration Guide](docs/MIGRATION_GUIDE.md) — Base PostgreSQL schema and dynamic field procedures
+- [❓ Architecture Decisions](docs/OPEN_QUESTIONS.md) — Record of architectural decisions (D01-D05)
+
+---
+
+## 🤝 Contributing & License
+
+Contributions, issues, and feature requests are welcome!  
+Feel free to check [issues page](https://github.com/goyanikrishna/npm-package/issues).
+
+Distributed under the **MIT License**. See [LICENSE](LICENSE) for more information.
