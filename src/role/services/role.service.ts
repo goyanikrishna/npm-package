@@ -49,7 +49,9 @@ export class RoleService {
     return getDataSource().getRepository(RolePermission);
   }
 
-  public async seedDefaultPermissions(extraPermissions: { key: string; name: string; module: string }[] = []): Promise<Permission[]> {
+  public async seedDefaultPermissions(
+    extraPermissions: { key: string; name: string; module: string }[] = [],
+  ): Promise<Permission[]> {
     const all = [...DEFAULT_PERMISSIONS, ...extraPermissions];
     const results: Permission[] = [];
 

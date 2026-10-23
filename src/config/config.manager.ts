@@ -59,7 +59,13 @@ class ConfigManager {
   }
 
   public getUsers(): IUsersConfig {
-    return this.get().users || { fields: [], statuses: ['active', 'inactive', 'suspended'], defaultStatus: 'active' };
+    return (
+      this.get().users || {
+        fields: [],
+        statuses: ['active', 'inactive', 'suspended'],
+        defaultStatus: 'active',
+      }
+    );
   }
 
   public getRoles(): IRoleConfig[] {

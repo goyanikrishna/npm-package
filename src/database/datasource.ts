@@ -36,7 +36,9 @@ export const destroyDataSource = async (): Promise<void> => {
 
 export const getDataSource = (): DataSource => {
   if (!appDataSource || !appDataSource.isInitialized) {
-    throw new Error('DataSource not initialized! Call initializeBackend() or initializeDataSource() first.');
+    throw new Error(
+      'DataSource not initialized! Call initializeBackend() or initializeDataSource() first.',
+    );
   }
   return appDataSource;
 };

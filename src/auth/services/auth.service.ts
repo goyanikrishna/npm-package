@@ -56,9 +56,11 @@ export class AuthService {
     );
 
     // Send welcome email asynchronously
-    emailService.sendWelcomeEmail(safeUser.email!, {
-      firstName: safeUser.first_name || '',
-    }).catch(() => {});
+    emailService
+      .sendWelcomeEmail(safeUser.email!, {
+        firstName: safeUser.first_name || '',
+      })
+      .catch(() => {});
 
     return {
       user: safeUser,
@@ -116,16 +118,13 @@ export class AuthService {
     await sessionService.revokeSession(refreshToken);
 
     // Issue new token pair
-    return this.generateTokenPair(
-      user.id,
-      session.project_id,
-      user.email,
-      user.role,
-      clientMeta,
-    );
+    return this.generateTokenPair(user.id, session.project_id, user.email, user.role, clientMeta);
   }
 
-  public async forgotPassword(projectId: string, email: string): Promise<{ token: string; email: string }> {
+  public async forgotPassword(
+    projectId: string,
+    email: string,
+  ): Promise<{ token: string; email: string }> {
     const user = await userService.getUserByEmail(projectId, email);
     if (!user) {
       // For security, don't reveal email existence; return success-like object
@@ -135,9 +134,11 @@ export class AuthService {
     const resetToken = await tokenService.createPasswordResetToken(projectId, email);
 
     // Send password reset email asynchronously
-    emailService.sendForgotPasswordEmail(email, {
-      token: resetToken.token,
-    }).catch(() => {});
+    emailService
+      .sendForgotPasswordEmail(email, {
+        token: resetToken.token,
+      })
+      .catch(() => {});
 
     return { token: resetToken.token, email };
   }
@@ -206,7 +207,11 @@ export class AuthService {
     projectId: string,
     passwordConfirmation: string,
   ): Promise<void> {
-    const user = await userService.getUserByEmail(projectId, (await userService.getUserById(userId, projectId)).email, true);
+    const user = await userService.getUserByEmail(
+      projectId,
+      (await userService.getUserById(userId, projectId)).email,
+      true,
+    );
 
     if (!user) {
       throw new UserNotFoundError();

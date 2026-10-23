@@ -4,7 +4,12 @@ import { Project } from '../entities/project.entity';
 import { getDataSource } from '../../database/datasource';
 import { DuplicateProjectError, ProjectNotFoundError } from '../../errors/project.errors';
 import { slugify } from '../../utils/slug.util';
-import { parsePagination, formatPaginatedResponse, IPaginationQuery, IPaginatedResult } from '../../utils/pagination.util';
+import {
+  parsePagination,
+  formatPaginatedResponse,
+  IPaginationQuery,
+  IPaginatedResult,
+} from '../../utils/pagination.util';
 
 export interface ICreateProjectDto {
   name: string;
@@ -33,7 +38,9 @@ export class ProjectService {
     });
 
     if (existing) {
-      throw new DuplicateProjectError(`Project with name "${dto.name}" or slug "${slug}" already exists`);
+      throw new DuplicateProjectError(
+        `Project with name "${dto.name}" or slug "${slug}" already exists`,
+      );
     }
 
     const project = this.repo.create({

@@ -38,7 +38,9 @@ export class StorageService {
     } else if (storageConfig.provider === 'r2') {
       this.provider = new R2StorageProvider(storageConfig);
     } else {
-      throw new StorageError(`Unsupported storage provider: ${(storageConfig as { provider?: string }).provider}`);
+      throw new StorageError(
+        `Unsupported storage provider: ${(storageConfig as { provider?: string }).provider}`,
+      );
     }
 
     return this.provider;
@@ -48,10 +50,7 @@ export class StorageService {
     this.provider = mock;
   }
 
-  public validateFile(
-    file: IUploadFileInput,
-    options: IFileValidationOptions = {},
-  ): void {
+  public validateFile(file: IUploadFileInput, options: IFileValidationOptions = {}): void {
     const maxSizeBytes = options.maxSizeBytes || 10 * 1024 * 1024; // 10 MB
 
     if (file.buffer.length > maxSizeBytes) {

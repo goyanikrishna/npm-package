@@ -1,15 +1,7 @@
 // Configuration Type Definitions for @node-backend-toolkit
 
 export type DynamicFieldType =
-  | 'string'
-  | 'text'
-  | 'integer'
-  | 'decimal'
-  | 'boolean'
-  | 'date'
-  | 'datetime'
-  | 'uuid'
-  | 'enum';
+  'string' | 'text' | 'integer' | 'decimal' | 'boolean' | 'date' | 'datetime' | 'uuid' | 'enum';
 
 export interface IUserFieldConfig {
   name: string;

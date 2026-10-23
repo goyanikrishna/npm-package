@@ -71,10 +71,9 @@ export const authController = {
 
   async getProfile(req: Request, res: Response, next: NextFunction): Promise<void> {
     try {
-      const profile = await (await import('../../user/services/user.service')).userService.getProfile(
-        req.user!.id,
-        req.projectId!,
-      );
+      const profile = await (
+        await import('../../user/services/user.service')
+      ).userService.getProfile(req.user!.id, req.projectId!);
       sendResponse(res, profile, 'Profile retrieved successfully', 200);
     } catch (err) {
       next(err);
@@ -83,11 +82,9 @@ export const authController = {
 
   async updateProfile(req: Request, res: Response, next: NextFunction): Promise<void> {
     try {
-      const updated = await (await import('../../user/services/user.service')).userService.updateProfile(
-        req.user!.id,
-        req.projectId!,
-        req.body,
-      );
+      const updated = await (
+        await import('../../user/services/user.service')
+      ).userService.updateProfile(req.user!.id, req.projectId!, req.body);
       sendResponse(res, updated, 'Profile updated successfully', 200);
     } catch (err) {
       next(err);

@@ -17,7 +17,9 @@ export class InitialPackageMigration1700000000000 implements MigrationInterface 
         "updated_at" TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now()
       );
     `);
-    await queryRunner.query(`CREATE INDEX IF NOT EXISTS "idx_projects_slug" ON "projects" ("slug");`);
+    await queryRunner.query(
+      `CREATE INDEX IF NOT EXISTS "idx_projects_slug" ON "projects" ("slug");`,
+    );
 
     // 2. Roles Table
     await queryRunner.query(`
@@ -32,7 +34,9 @@ export class InitialPackageMigration1700000000000 implements MigrationInterface 
         CONSTRAINT "idx_roles_project_name_unique" UNIQUE ("project_id", "name")
       );
     `);
-    await queryRunner.query(`CREATE INDEX IF NOT EXISTS "idx_roles_project_id" ON "roles" ("project_id");`);
+    await queryRunner.query(
+      `CREATE INDEX IF NOT EXISTS "idx_roles_project_id" ON "roles" ("project_id");`,
+    );
 
     // 3. Permissions Table
     await queryRunner.query(`
@@ -44,7 +48,9 @@ export class InitialPackageMigration1700000000000 implements MigrationInterface 
         "created_at" TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now()
       );
     `);
-    await queryRunner.query(`CREATE INDEX IF NOT EXISTS "idx_permissions_key" ON "permissions" ("key");`);
+    await queryRunner.query(
+      `CREATE INDEX IF NOT EXISTS "idx_permissions_key" ON "permissions" ("key");`,
+    );
 
     // 4. Role Permissions Table
     await queryRunner.query(`
@@ -56,8 +62,12 @@ export class InitialPackageMigration1700000000000 implements MigrationInterface 
         CONSTRAINT "idx_role_permissions_unique" UNIQUE ("role_id", "permission_id")
       );
     `);
-    await queryRunner.query(`CREATE INDEX IF NOT EXISTS "idx_role_permissions_role_id" ON "role_permissions" ("role_id");`);
-    await queryRunner.query(`CREATE INDEX IF NOT EXISTS "idx_role_permissions_permission_id" ON "role_permissions" ("permission_id");`);
+    await queryRunner.query(
+      `CREATE INDEX IF NOT EXISTS "idx_role_permissions_role_id" ON "role_permissions" ("role_id");`,
+    );
+    await queryRunner.query(
+      `CREATE INDEX IF NOT EXISTS "idx_role_permissions_permission_id" ON "role_permissions" ("permission_id");`,
+    );
 
     // 5. Users Table
     await queryRunner.query(`
@@ -81,7 +91,9 @@ export class InitialPackageMigration1700000000000 implements MigrationInterface 
         "deleted_at" TIMESTAMP WITH TIME ZONE
       );
     `);
-    await queryRunner.query(`CREATE INDEX IF NOT EXISTS "idx_users_project_id" ON "users" ("project_id");`);
+    await queryRunner.query(
+      `CREATE INDEX IF NOT EXISTS "idx_users_project_id" ON "users" ("project_id");`,
+    );
     await queryRunner.query(`
       CREATE UNIQUE INDEX IF NOT EXISTS "idx_users_project_email_unique_active"
       ON "users" ("project_id", "email")
@@ -98,8 +110,12 @@ export class InitialPackageMigration1700000000000 implements MigrationInterface 
         "updated_at" TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now()
       );
     `);
-    await queryRunner.query(`CREATE INDEX IF NOT EXISTS "idx_user_profiles_user_id" ON "user_profiles" ("user_id");`);
-    await queryRunner.query(`CREATE INDEX IF NOT EXISTS "idx_user_profiles_project_id" ON "user_profiles" ("project_id");`);
+    await queryRunner.query(
+      `CREATE INDEX IF NOT EXISTS "idx_user_profiles_user_id" ON "user_profiles" ("user_id");`,
+    );
+    await queryRunner.query(
+      `CREATE INDEX IF NOT EXISTS "idx_user_profiles_project_id" ON "user_profiles" ("project_id");`,
+    );
 
     // 7. Sessions Table (Refresh Tokens)
     await queryRunner.query(`
@@ -116,9 +132,15 @@ export class InitialPackageMigration1700000000000 implements MigrationInterface 
         "updated_at" TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now()
       );
     `);
-    await queryRunner.query(`CREATE INDEX IF NOT EXISTS "idx_sessions_user_id" ON "sessions" ("user_id");`);
-    await queryRunner.query(`CREATE INDEX IF NOT EXISTS "idx_sessions_project_id" ON "sessions" ("project_id");`);
-    await queryRunner.query(`CREATE INDEX IF NOT EXISTS "idx_sessions_refresh_token" ON "sessions" ("refresh_token");`);
+    await queryRunner.query(
+      `CREATE INDEX IF NOT EXISTS "idx_sessions_user_id" ON "sessions" ("user_id");`,
+    );
+    await queryRunner.query(
+      `CREATE INDEX IF NOT EXISTS "idx_sessions_project_id" ON "sessions" ("project_id");`,
+    );
+    await queryRunner.query(
+      `CREATE INDEX IF NOT EXISTS "idx_sessions_refresh_token" ON "sessions" ("refresh_token");`,
+    );
 
     // 8. Password Reset Tokens Table
     await queryRunner.query(`
@@ -133,9 +155,15 @@ export class InitialPackageMigration1700000000000 implements MigrationInterface 
         "updated_at" TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now()
       );
     `);
-    await queryRunner.query(`CREATE INDEX IF NOT EXISTS "idx_password_reset_tokens_project_id" ON "password_reset_tokens" ("project_id");`);
-    await queryRunner.query(`CREATE INDEX IF NOT EXISTS "idx_password_reset_tokens_email" ON "password_reset_tokens" ("email");`);
-    await queryRunner.query(`CREATE INDEX IF NOT EXISTS "idx_password_reset_tokens_token" ON "password_reset_tokens" ("token");`);
+    await queryRunner.query(
+      `CREATE INDEX IF NOT EXISTS "idx_password_reset_tokens_project_id" ON "password_reset_tokens" ("project_id");`,
+    );
+    await queryRunner.query(
+      `CREATE INDEX IF NOT EXISTS "idx_password_reset_tokens_email" ON "password_reset_tokens" ("email");`,
+    );
+    await queryRunner.query(
+      `CREATE INDEX IF NOT EXISTS "idx_password_reset_tokens_token" ON "password_reset_tokens" ("token");`,
+    );
   }
 
   public async down(queryRunner: QueryRunner): Promise<void> {

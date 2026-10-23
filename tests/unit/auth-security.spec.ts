@@ -127,9 +127,7 @@ describe('Security & Authorization Middleware', () => {
     });
 
     it('should throw PermissionDeniedError if user lacks any required permission', async () => {
-      jest
-        .spyOn(roleService, 'getUserPermissions')
-        .mockResolvedValue(['users:view']);
+      jest.spyOn(roleService, 'getUserPermissions').mockResolvedValue(['users:view']);
 
       const req: any = {
         user: { id: 'user-1', role: 'user', project_id: 'proj-1' },

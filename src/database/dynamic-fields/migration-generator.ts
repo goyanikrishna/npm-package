@@ -65,9 +65,7 @@ export const generateMigration = (
       upStatements.push(
         `    await queryRunner.query(\`CREATE INDEX IF NOT EXISTS "${idxName}" ON "user_profiles" ("${field.name}")\`);`,
       );
-      downStatements.push(
-        `    await queryRunner.query(\`DROP INDEX IF EXISTS "${idxName}"\`);`,
-      );
+      downStatements.push(`    await queryRunner.query(\`DROP INDEX IF EXISTS "${idxName}"\`);`);
     }
 
     // Add unique constraint if specified

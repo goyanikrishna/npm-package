@@ -13,7 +13,7 @@ export class SmtpProvider implements IEmailProvider {
     this.transporter = nodemailer.createTransport({
       host: config.host,
       port: config.port,
-      secure: config.secure ?? (config.port === 465),
+      secure: config.secure ?? config.port === 465,
       auth: {
         user: config.auth.user,
         pass: config.auth.pass,

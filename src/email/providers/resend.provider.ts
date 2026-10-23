@@ -20,7 +20,9 @@ export class ResendProvider implements IEmailProvider {
         const mod = await import('resend');
         ResendClient = mod.Resend;
       } catch {
-        throw new EmailError('The "resend" package is not installed. Please install it using: npm install resend');
+        throw new EmailError(
+          'The "resend" package is not installed. Please install it using: npm install resend',
+        );
       }
 
       const resend = new ResendClient(this.apiKey);

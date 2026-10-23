@@ -35,7 +35,9 @@ export class PasswordService {
     }
 
     if (password.length < policy.minLength) {
-      throw new BadRequestException(`Password must be at least ${policy.minLength} characters long`);
+      throw new BadRequestException(
+        `Password must be at least ${policy.minLength} characters long`,
+      );
     }
 
     if (password.length > policy.maxLength) {

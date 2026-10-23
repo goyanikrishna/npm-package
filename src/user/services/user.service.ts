@@ -11,7 +11,12 @@ import {
   UserNotFoundError,
 } from '../../errors/user.errors';
 import { normalizeEmail } from '../../utils/email-normalizer.util';
-import { parsePagination, formatPaginatedResponse, IPaginationQuery, IPaginatedResult } from '../../utils/pagination.util';
+import {
+  parsePagination,
+  formatPaginatedResponse,
+  IPaginationQuery,
+  IPaginatedResult,
+} from '../../utils/pagination.util';
 import { validateDynamicFields } from '../validators/dynamic-field.validator';
 import { passwordService } from '../../auth/services/password.service';
 
@@ -49,7 +54,6 @@ export class UserService {
   private get userRepo(): Repository<User> {
     return getDataSource().getRepository(User);
   }
-
 
   public sanitizeUser(user: User): Partial<User> {
     const { password: _password, ...safeUser } = user;
@@ -194,7 +198,12 @@ export class UserService {
     const user = await this.getUserById(id, projectId);
 
     // Safeguard D03: Super Admin cannot self-demote
-    if (user.id === updaterId && user.role === 'super_admin' && dto.role && dto.role !== 'super_admin') {
+    if (
+      user.id === updaterId &&
+      user.role === 'super_admin' &&
+      dto.role &&
+      dto.role !== 'super_admin'
+    ) {
       throw new SelfDemotionError();
     }
 
@@ -257,7 +266,14 @@ export class UserService {
   public async updateProfile(
     userId: string,
     projectId: string,
-    dto: { firstName?: string; lastName?: string; phone?: string; avatar?: string; language?: string; profile?: Record<string, unknown> },
+    dto: {
+      firstName?: string;
+      lastName?: string;
+      phone?: string;
+      avatar?: string;
+      language?: string;
+      profile?: Record<string, unknown>;
+    },
   ): Promise<Partial<User>> {
     return this.updateUser(userId, projectId, dto, userId);
   }

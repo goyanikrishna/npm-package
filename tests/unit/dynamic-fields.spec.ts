@@ -1,6 +1,9 @@
 // Dynamic Fields & Migration Generator Unit Tests
 import { validateDynamicFields } from '../../src/user/validators/dynamic-field.validator';
-import { generateMigration, mapTypeToPostgres } from '../../src/database/dynamic-fields/migration-generator';
+import {
+  generateMigration,
+  mapTypeToPostgres,
+} from '../../src/database/dynamic-fields/migration-generator';
 import { IUserFieldConfig } from '../../src/config/types';
 import { DynamicFieldValidationError } from '../../src/errors/config.errors';
 
@@ -46,9 +49,7 @@ describe('Dynamic Fields System', () => {
         bio: 'Missing department',
       };
 
-      expect(() => validateDynamicFields(input, fieldsConfig)).toThrow(
-        DynamicFieldValidationError,
-      );
+      expect(() => validateDynamicFields(input, fieldsConfig)).toThrow(DynamicFieldValidationError);
     });
 
     it('should throw DynamicFieldValidationError if enum value is invalid', () => {
@@ -57,9 +58,7 @@ describe('Dynamic Fields System', () => {
         tier: 'unsupported_tier',
       };
 
-      expect(() => validateDynamicFields(input, fieldsConfig)).toThrow(
-        DynamicFieldValidationError,
-      );
+      expect(() => validateDynamicFields(input, fieldsConfig)).toThrow(DynamicFieldValidationError);
     });
 
     it('should throw DynamicFieldValidationError if string exceeds maxLength', () => {
@@ -67,9 +66,7 @@ describe('Dynamic Fields System', () => {
         department: 'A'.repeat(51), // limit is 50
       };
 
-      expect(() => validateDynamicFields(input, fieldsConfig)).toThrow(
-        DynamicFieldValidationError,
-      );
+      expect(() => validateDynamicFields(input, fieldsConfig)).toThrow(DynamicFieldValidationError);
     });
 
     it('should throw DynamicFieldValidationError if UUID format is invalid', () => {
@@ -78,9 +75,7 @@ describe('Dynamic Fields System', () => {
         external_id: 'not-a-valid-uuid',
       };
 
-      expect(() => validateDynamicFields(input, fieldsConfig)).toThrow(
-        DynamicFieldValidationError,
-      );
+      expect(() => validateDynamicFields(input, fieldsConfig)).toThrow(DynamicFieldValidationError);
     });
   });
 
@@ -94,9 +89,7 @@ describe('Dynamic Fields System', () => {
       expect(mapTypeToPostgres({ name: 'f4', type: 'decimal' })).toBe('DECIMAL(12, 2)');
       expect(mapTypeToPostgres({ name: 'f5', type: 'boolean' })).toBe('BOOLEAN');
       expect(mapTypeToPostgres({ name: 'f6', type: 'date' })).toBe('DATE');
-      expect(mapTypeToPostgres({ name: 'f7', type: 'datetime' })).toBe(
-        'TIMESTAMP WITH TIME ZONE',
-      );
+      expect(mapTypeToPostgres({ name: 'f7', type: 'datetime' })).toBe('TIMESTAMP WITH TIME ZONE');
       expect(mapTypeToPostgres({ name: 'f8', type: 'uuid' })).toBe('UUID');
       expect(mapTypeToPostgres({ name: 'f9', type: 'enum' })).toBe('VARCHAR(50)');
     });
@@ -109,13 +102,23 @@ describe('Dynamic Fields System', () => {
       expect(migration.className).toBe('AddDynamicFieldsToUserProfiles1700000000000');
 
       // Up statements check
-      expect(migration.code).toContain('ALTER TABLE "user_profiles" ADD COLUMN IF NOT EXISTS "department" VARCHAR(50) NOT NULL');
-      expect(migration.code).toContain('ALTER TABLE "user_profiles" ADD COLUMN IF NOT EXISTS "tier" VARCHAR(50) NULL');
-      expect(migration.code).toContain('CREATE INDEX IF NOT EXISTS "idx_user_profiles_tier" ON "user_profiles" ("tier")');
-      expect(migration.code).toContain('ALTER TABLE "user_profiles" ADD CONSTRAINT "uq_user_profiles_external_id" UNIQUE ("external_id")');
+      expect(migration.code).toContain(
+        'ALTER TABLE "user_profiles" ADD COLUMN IF NOT EXISTS "department" VARCHAR(50) NOT NULL',
+      );
+      expect(migration.code).toContain(
+        'ALTER TABLE "user_profiles" ADD COLUMN IF NOT EXISTS "tier" VARCHAR(50) NULL',
+      );
+      expect(migration.code).toContain(
+        'CREATE INDEX IF NOT EXISTS "idx_user_profiles_tier" ON "user_profiles" ("tier")',
+      );
+      expect(migration.code).toContain(
+        'ALTER TABLE "user_profiles" ADD CONSTRAINT "uq_user_profiles_external_id" UNIQUE ("external_id")',
+      );
 
       // Down statements check
-      expect(migration.code).toContain('ALTER TABLE "user_profiles" DROP COLUMN IF EXISTS "department"');
+      expect(migration.code).toContain(
+        'ALTER TABLE "user_profiles" DROP COLUMN IF EXISTS "department"',
+      );
       expect(migration.code).toContain('DROP INDEX IF EXISTS "idx_user_profiles_tier"');
     });
   });

@@ -1,10 +1,7 @@
 // Storage Service Unit Tests
 import { storageService } from '../../src/storage/services/storage.service';
 import { IStorageProvider } from '../../src/storage/providers/storage-provider.interface';
-import {
-  FileSizeExceededError,
-  InvalidFileTypeError,
-} from '../../src/errors/storage.errors';
+import { FileSizeExceededError, InvalidFileTypeError } from '../../src/errors/storage.errors';
 
 describe('Storage Service', () => {
   describe('Path Generator', () => {

@@ -68,16 +68,24 @@ export class EmailService {
     });
   }
 
-  public async sendWelcomeEmail(to: string, data: { firstName: string; loginUrl?: string }): Promise<void> {
+  public async sendWelcomeEmail(
+    to: string,
+    data: { firstName: string; loginUrl?: string },
+  ): Promise<void> {
     const branding = configManager.getBranding();
     await this.send(to, `Welcome to ${branding.projectName}!`, 'welcome', data);
   }
 
-  public async sendForgotPasswordEmail(to: string, data: { token: string; resetUrl?: string }): Promise<void> {
+  public async sendForgotPasswordEmail(
+    to: string,
+    data: { token: string; resetUrl?: string },
+  ): Promise<void> {
     const branding = configManager.getBranding();
     const resetUrl =
       data.resetUrl ||
-      (branding.frontendUrl ? `${branding.frontendUrl}/reset-password?token=${data.token}` : undefined);
+      (branding.frontendUrl
+        ? `${branding.frontendUrl}/reset-password?token=${data.token}`
+        : undefined);
 
     await this.send(to, `Reset your password for ${branding.projectName}`, 'forgot-password', {
       ...data,
@@ -87,17 +95,32 @@ export class EmailService {
 
   public async sendPasswordResetSuccessEmail(to: string): Promise<void> {
     const branding = configManager.getBranding();
-    await this.send(to, `Your ${branding.projectName} password has been reset`, 'password-reset', {});
+    await this.send(
+      to,
+      `Your ${branding.projectName} password has been reset`,
+      'password-reset',
+      {},
+    );
   }
 
   public async sendPasswordChangedEmail(to: string): Promise<void> {
     const branding = configManager.getBranding();
-    await this.send(to, `Security Notice: ${branding.projectName} password changed`, 'password-changed', {});
+    await this.send(
+      to,
+      `Security Notice: ${branding.projectName} password changed`,
+      'password-changed',
+      {},
+    );
   }
 
   public async sendAccountDeletedEmail(to: string): Promise<void> {
     const branding = configManager.getBranding();
-    await this.send(to, `Your ${branding.projectName} account has been deleted`, 'account-deleted', {});
+    await this.send(
+      to,
+      `Your ${branding.projectName} account has been deleted`,
+      'account-deleted',
+      {},
+    );
   }
 }
 
