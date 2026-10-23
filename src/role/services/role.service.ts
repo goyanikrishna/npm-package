@@ -1,4 +1,4 @@
-// Role and Permission Service for @node-backend-toolkit
+// Role and Permission Service for node-backend-toolkit
 import { In, Repository } from 'typeorm';
 import { Role } from '../entities/role.entity';
 import { Permission } from '../entities/permission.entity';

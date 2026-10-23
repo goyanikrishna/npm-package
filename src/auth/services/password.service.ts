@@ -1,4 +1,4 @@
-// Password Service for @node-backend-toolkit
+// Password Service for node-backend-toolkit
 import bcrypt from 'bcryptjs';
 import { configManager } from '../../config/config.manager';
 import { IPasswordPolicyConfig } from '../../config/types';

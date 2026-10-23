@@ -1,4 +1,4 @@
-// Base error definition for @node-backend-toolkit
+// Base error definition for node-backend-toolkit
 
 export class ToolkitError extends Error {
   public status: number;

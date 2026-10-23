@@ -1,4 +1,4 @@
-// Initial Base Schema Migration for @node-backend-toolkit
+// Initial Base Schema Migration for node-backend-toolkit
 import { MigrationInterface, QueryRunner } from 'typeorm';
 
 export class InitialPackageMigration1700000000000 implements MigrationInterface {

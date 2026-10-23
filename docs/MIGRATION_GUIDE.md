@@ -1,6 +1,6 @@
 # Database Migration Guide
 
-> How migrations and dynamic fields work in `@node-backend-toolkit`.
+> How migrations and dynamic fields work in `node-backend-toolkit`.
 
 ---
 
@@ -76,7 +76,7 @@ npx typeorm migration:run -d ./dist/database/datasource.js
 ```
 Or programmatically:
 ```typescript
-import { getDataSource } from '@node-backend-toolkit/core';
+import { getDataSource } from 'node-backend-toolkit';
 
 await getDataSource().runMigrations();
 ```

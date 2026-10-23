@@ -1,4 +1,4 @@
-// Pagination utility for @node-backend-toolkit
+// Pagination utility for node-backend-toolkit
 
 export interface IPaginationQuery {
   page?: number | string;

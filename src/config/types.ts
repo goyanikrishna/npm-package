@@ -1,4 +1,4 @@
-// Configuration Type Definitions for @node-backend-toolkit
+// Configuration Type Definitions for node-backend-toolkit
 
 export type DynamicFieldType =
   'string' | 'text' | 'integer' | 'decimal' | 'boolean' | 'date' | 'datetime' | 'uuid' | 'enum';

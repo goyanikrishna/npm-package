@@ -1,4 +1,4 @@
-// DataSource Manager for @node-backend-toolkit
+// DataSource Manager for node-backend-toolkit
 import 'reflect-metadata';
 import { DataSource } from 'typeorm';
 import { PostgresConnectionOptions } from 'typeorm/driver/postgres/PostgresConnectionOptions';

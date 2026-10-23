@@ -1,4 +1,4 @@
-# `@node-backend-toolkit/core`
+# `node-backend-toolkit`
 
 > A production-grade, multi-project reusable backend toolkit for Node.js, Express, TypeScript, TypeORM, and PostgreSQL.
 
@@ -36,7 +36,7 @@
 ## Installation
 
 ```bash
-npm install @node-backend-toolkit/core
+npm install node-backend-toolkit
 npm install express typeorm pg reflect-metadata
 ```
 
@@ -51,7 +51,7 @@ npm install @aws-sdk/client-s3 @aws-sdk/s3-request-presigner resend
 
 ```typescript
 import express from 'express';
-import { initializeBackend, errorHandlerMiddleware } from '@node-backend-toolkit/core';
+import { initializeBackend, errorHandlerMiddleware } from 'node-backend-toolkit';
 
 async function bootstrap() {
   const app = express();

@@ -1,7 +1,7 @@
 # Frontend API Integration Guide
 
 > **Authoritative Integration Handbook for Frontend Engineers**  
-> Complete guide for integrating with the `@node-backend-toolkit` REST API.
+> Complete guide for integrating with the `node-backend-toolkit` REST API.
 
 ---
 

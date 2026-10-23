@@ -1,4 +1,4 @@
-// User Entity for @node-backend-toolkit
+// User Entity for node-backend-toolkit
 import bcrypt from 'bcryptjs';
 import {
   BeforeInsert,

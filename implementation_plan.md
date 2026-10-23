@@ -1,4 +1,4 @@
-# `@node-backend-toolkit` — Audit, Architecture & Implementation Plan
+# `node-backend-toolkit` — Audit, Architecture & Implementation Plan
 
 ---
 
@@ -470,7 +470,7 @@ userFields: [             npx node-backend-toolkit       ALTER TABLE
 ### 4.6 Configuration Object (Full Example)
 
 ```typescript
-import { initializeBackend } from '@node-backend-toolkit';
+import { initializeBackend } from 'node-backend-toolkit';
 
 await initializeBackend({
   project: {

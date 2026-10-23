@@ -1,6 +1,6 @@
 # Changelog
 
-All notable changes to `@node-backend-toolkit/core` will be documented in this file.
+All notable changes to `node-backend-toolkit` will be documented in this file.
 
 ## [1.0.0] - 2026-10-16
 

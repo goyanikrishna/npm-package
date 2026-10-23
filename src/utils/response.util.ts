@@ -1,4 +1,4 @@
-// Response utility for @node-backend-toolkit
+// Response utility for node-backend-toolkit
 import { Response } from 'express';
 
 export interface IApiResponse<T = unknown> {

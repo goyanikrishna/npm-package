@@ -1,4 +1,4 @@
-# `@node-backend-toolkit` — API Source of Truth
+# `node-backend-toolkit` — API Source of Truth
 
 > **Authoritative API Contract for Frontend Integration**  
 > All endpoints are scoped by project slug: `/api/:project_slug/...`

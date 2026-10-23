@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-// CLI for @node-backend-toolkit
+// CLI for node-backend-toolkit
 import fs from 'fs';
 import path from 'path';
 import { generateMigration } from '../database/dynamic-fields/migration-generator';
@@ -7,7 +7,7 @@ import { IUserFieldConfig } from '../config/types';
 
 const printHelp = () => {
   console.log(`
-@node-backend-toolkit CLI
+node-backend-toolkit CLI
 
 Usage:
   npx node-backend-toolkit <command> [options]

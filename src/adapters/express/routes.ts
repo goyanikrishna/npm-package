@@ -1,4 +1,4 @@
-// Express Router Factory for @node-backend-toolkit
+// Express Router Factory for node-backend-toolkit
 import { Router } from 'express';
 import { projectContextMiddleware } from '../../middleware/project-context.middleware';
 import { authorizeMiddleware } from '../../middleware/authorize.middleware';

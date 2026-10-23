@@ -1,4 +1,4 @@
-// Singleton Config Manager for @node-backend-toolkit
+// Singleton Config Manager for node-backend-toolkit
 import {
   IAuthConfig,
   IBackendConfig,

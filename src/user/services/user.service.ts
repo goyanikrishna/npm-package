@@ -1,4 +1,4 @@
-// User Service for @node-backend-toolkit
+// User Service for node-backend-toolkit
 import { IsNull, Repository } from 'typeorm';
 import { User } from '../entities/user.entity';
 import { UserProfile } from '../entities/user-profile.entity';

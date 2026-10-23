@@ -1,13 +1,13 @@
 # Configuration Reference Guide
 
-> Complete reference for initializing `@node-backend-toolkit/core`.
+> Complete reference for initializing `node-backend-toolkit`.
 
 ---
 
 ## 1. Quick Example
 
 ```typescript
-import { initializeBackend } from '@node-backend-toolkit/core';
+import { initializeBackend } from 'node-backend-toolkit';
 
 const { dataSource, project, router } = await initializeBackend({
   project: {

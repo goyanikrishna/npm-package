@@ -1,4 +1,4 @@
-// Public API entry point for @node-backend-toolkit/core
+// Public API entry point for node-backend-toolkit
 
 // Bootstrap
 export * from './bootstrap/bootstrap.service';

@@ -1,4 +1,4 @@
-// Project Service for @node-backend-toolkit
+// Project Service for node-backend-toolkit
 import { Repository } from 'typeorm';
 import { Project } from '../entities/project.entity';
 import { getDataSource } from '../../database/datasource';

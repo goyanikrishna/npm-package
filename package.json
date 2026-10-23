@@ -1,5 +1,5 @@
 {
-  "name": "@node-backend-toolkit/core",
+  "name": "node-backend-toolkit",
   "version": "1.0.0",
   "description": "A fully dynamic, multi-project reusable backend package for authentication, user management, roles, permissions, email, and storage.",
   "main": "dist/index.js",
