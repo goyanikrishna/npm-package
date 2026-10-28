@@ -14,7 +14,7 @@ export interface IRouterOptions {
 }
 
 export const createBackendRouter = (options: IRouterOptions = {}): Router => {
-  const router = Router();
+  const router = Router({ mergeParams: true });
   const includeProjectContext = options.includeProjectContext !== false;
 
   if (includeProjectContext) {

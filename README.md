@@ -153,11 +153,11 @@ npx node-backend-toolkit generate-migration --config=./toolkit.config.json
 
 ## 📚 Documentation
 
-- [📖 API Source of Truth](docs/API_SOURCE_OF_TRUTH.md) — Comprehensive REST API endpoint catalog with request/response schemas
-- [💻 Frontend Integration Guide](docs/FRONTEND_API_INTEGRATION.md) — Guide for frontend developers with Axios interceptor implementation
-- [⚙️ Configuration Reference](docs/CONFIGURATION_REFERENCE.md) — Exhaustive guide for all configuration options
-- [🗄️ Database & Migration Guide](docs/MIGRATION_GUIDE.md) — Base PostgreSQL schema and dynamic field procedures
-- [❓ Architecture Decisions](docs/OPEN_QUESTIONS.md) — Record of architectural decisions (D01-D05)
+- [📖 API Source of Truth](https://github.com/goyanikrishna/npm-package/blob/main/docs/API_SOURCE_OF_TRUTH.md) — Comprehensive REST API endpoint catalog with request/response schemas
+- [💻 Frontend Integration Guide](https://github.com/goyanikrishna/npm-package/blob/main/docs/FRONTEND_API_INTEGRATION.md) — Guide for frontend developers with Axios interceptor implementation
+- [⚙️ Configuration Reference](https://github.com/goyanikrishna/npm-package/blob/main/docs/CONFIGURATION_REFERENCE.md) — Exhaustive guide for all configuration options
+- [🗄️ Database & Migration Guide](https://github.com/goyanikrishna/npm-package/blob/main/docs/MIGRATION_GUIDE.md) — Base PostgreSQL schema and dynamic field procedures
+- [❓ Architecture Decisions](https://github.com/goyanikrishna/npm-package/blob/main/docs/OPEN_QUESTIONS.md) — Record of architectural decisions (D01-D05)
 
 ---
 
@@ -166,4 +166,4 @@ npx node-backend-toolkit generate-migration --config=./toolkit.config.json
 Contributions, issues, and feature requests are welcome!  
 Feel free to check [issues page](https://github.com/goyanikrishna/npm-package/issues).
 
-Distributed under the **MIT License**. See [LICENSE](LICENSE) for more information.
+Distributed under the **MIT License**. See [LICENSE](https://github.com/goyanikrishna/npm-package/blob/main/LICENSE) for more information.

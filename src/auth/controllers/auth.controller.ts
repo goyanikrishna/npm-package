@@ -39,7 +39,11 @@ export const authController = {
         userAgent: req.headers['user-agent'],
       };
 
-      const tokens = await authService.refreshToken(req.body.refreshToken, clientMeta);
+      const tokens = await authService.refreshToken(
+        req.body.refreshToken,
+        clientMeta,
+        req.projectId,
+      );
       sendResponse(res, tokens, 'Token refreshed successfully', 200);
     } catch (err) {
       next(err);

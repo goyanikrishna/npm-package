@@ -334,6 +334,8 @@ All errors return the standard error envelope:
   | `search` | string | — | Search across first_name, last_name, email |
   | `role` | string | — | Filter by role name |
   | `status` | string | — | Filter by status |
+- **Rules**:
+  - The system `super_admin` account is automatically excluded from general user listings.
 
 - **Success Response (`200 OK`)**:
   ```json

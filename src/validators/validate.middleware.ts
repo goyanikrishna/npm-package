@@ -28,7 +28,10 @@ export const validate = (schema: IValidationSchema) => {
       }
 
       if (schema.params && req.params) {
-        const { error, value } = schema.params.validate(req.params, { abortEarly: false });
+        const { error, value } = schema.params.validate(req.params, {
+          abortEarly: false,
+          allowUnknown: true,
+        });
         if (error) {
           throw new BadRequestException(
             'URL parameters validation failed',

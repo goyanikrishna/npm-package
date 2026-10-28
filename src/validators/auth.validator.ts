@@ -42,9 +42,10 @@ export const authParams = {
 
   changePassword: {
     body: Joi.object({
-      currentPassword: Joi.string().required(),
+      currentPassword: Joi.string().optional(),
+      oldPassword: Joi.string().optional(),
       newPassword: Joi.string().min(6).required(),
-    }),
+    }).or('currentPassword', 'oldPassword'),
   },
 
   deleteAccount: {

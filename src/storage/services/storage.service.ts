@@ -68,14 +68,16 @@ export class StorageService {
   }
 
   public buildStorageKey(projectSlug: string, module: string, originalname: string): string {
-    const ext = path.extname(originalname);
+    const safeProjectSlug = projectSlug.replace(/[^a-zA-Z0-9_-]/g, '').slice(0, 50);
+    const safeModule = module.replace(/[^a-zA-Z0-9_-]/g, '').slice(0, 50);
+    const ext = path.extname(originalname).replace(/[^a-zA-Z0-9.]/g, '');
     const sanitizedBase = path
       .basename(originalname, ext)
       .replace(/[^a-zA-Z0-9-_]/g, '_')
       .slice(0, 50);
 
     const randomSuffix = crypto.randomUUID().slice(0, 8);
-    return `${projectSlug}/${module}/${Date.now()}-${randomSuffix}-${sanitizedBase}${ext}`;
+    return `${safeProjectSlug}/${safeModule}/${Date.now()}-${randomSuffix}-${sanitizedBase}${ext}`;
   }
 
   public async upload(

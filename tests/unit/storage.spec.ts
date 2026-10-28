@@ -18,6 +18,17 @@ describe('Storage Service', () => {
       expect(key).not.toContain(')');
       expect(key).not.toContain(' ');
     });
+
+    it('should sanitize path traversal attempts in projectSlug and module', () => {
+      const key = storageService.buildStorageKey(
+        '../../evil-tenant',
+        '../system/root',
+        '../../../passwd.txt',
+      );
+
+      expect(key).not.toContain('..');
+      expect(key.startsWith('evil-tenant/systemroot/')).toBe(true);
+    });
   });
 
   describe('File Validation', () => {

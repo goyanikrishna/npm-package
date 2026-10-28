@@ -95,6 +95,8 @@ export class InitialPackageMigration1700000000000 implements MigrationInterface 
       `CREATE INDEX IF NOT EXISTS "idx_users_project_id" ON "users" ("project_id");`,
     );
     await queryRunner.query(`
+      ALTER TABLE "users" DROP CONSTRAINT IF EXISTS "uq_users_project_email";
+      ALTER TABLE "users" DROP CONSTRAINT IF EXISTS "users_project_id_email_key";
       CREATE UNIQUE INDEX IF NOT EXISTS "idx_users_project_email_unique_active"
       ON "users" ("project_id", "email")
       WHERE "deleted_at" IS NULL;

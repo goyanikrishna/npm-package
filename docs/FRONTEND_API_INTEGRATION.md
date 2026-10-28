@@ -160,6 +160,7 @@ When calling `GET /users`:
 - `search`: search by name or email (e.g. `?search=john`)
 - `role`: filter by role (e.g. `?role=manager`)
 - `status`: filter by status (e.g. `?status=active`)
+- System `super_admin` accounts are automatically excluded from directory results for security.
 
 Pagination response format:
 ```json

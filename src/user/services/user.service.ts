@@ -31,6 +31,7 @@ export interface ICreateUserDto {
   language?: string;
   avatar?: string;
   profile?: Record<string, unknown>;
+  [key: string]: unknown;
 }
 
 export interface IUpdateUserDto {
@@ -41,7 +42,9 @@ export interface IUpdateUserDto {
   status?: string;
   language?: string;
   avatar?: string;
+  password?: string;
   profile?: Record<string, unknown>;
+  [key: string]: unknown;
 }
 
 export interface IUserFilterQuery extends IPaginationQuery {
@@ -86,8 +89,18 @@ export class UserService {
     } else {
       rawPassword = Math.random().toString(36).slice(-10) + 'A1!';
     }
+    const hashedPassword = await passwordService.hashPassword(rawPassword);
 
-    const sanitizedProfile = validateDynamicFields(dto.profile || {});
+    const configuredFields = configManager.getUsers().fields || [];
+    const dynamicPayload: Record<string, unknown> = {
+      ...(dto.profile || {}),
+    };
+    for (const f of configuredFields) {
+      if (dto[f.name] !== undefined) {
+        dynamicPayload[f.name] = dto[f.name];
+      }
+    }
+    const sanitizedProfile = validateDynamicFields(dynamicPayload, configuredFields, false);
 
     const ds = getDataSource();
     return ds.transaction(async (manager) => {
@@ -97,7 +110,7 @@ export class UserService {
         last_name: dto.lastName,
         phone: dto.phone || null,
         email,
-        password: rawPassword,
+        password: hashedPassword,
         role,
         status,
         language: dto.language || 'en',
@@ -107,14 +120,15 @@ export class UserService {
 
       const savedUser = await manager.save(user);
 
-      const profile = manager.create(UserProfile, {
-        user_id: savedUser.id,
-        project_id: projectId,
-        ...sanitizedProfile,
-      });
-
-      await manager.save(profile);
-      savedUser.profile = profile;
+      const profileCols = ['user_id', 'project_id', ...Object.keys(sanitizedProfile)];
+      const profilePlaceholders = profileCols.map((_, i) => `$${i + 1}`).join(', ');
+      const quotedCols = profileCols.map((k) => `"${k}"`).join(', ');
+      const profileValues = [savedUser.id, projectId, ...Object.values(sanitizedProfile)];
+      const profileRows = await manager.query(
+        `INSERT INTO "user_profiles" (${quotedCols}) VALUES (${profilePlaceholders}) RETURNING *`,
+        profileValues,
+      );
+      savedUser.profile = profileRows[0] || (profileRows as any);
 
       return this.sanitizeUser(savedUser);
     });
@@ -128,6 +142,18 @@ export class UserService {
 
     if (!user) {
       throw new UserNotFoundError(`User with ID "${id}" not found`);
+    }
+
+    try {
+      const profileRows = await this.userRepo.manager.query(
+        `SELECT * FROM "user_profiles" WHERE "user_id" = $1`,
+        [user.id],
+      );
+      if (profileRows && profileRows.length > 0) {
+        user.profile = profileRows[0];
+      }
+    } catch {
+      // In-memory or fallback
     }
 
     return user;
@@ -150,7 +176,22 @@ export class UserService {
       query.addSelect('user.password');
     }
 
-    return query.getOne();
+    const user = await query.getOne();
+    if (user) {
+      try {
+        const profileRows = await this.userRepo.manager.query(
+          `SELECT * FROM "user_profiles" WHERE "user_id" = $1`,
+          [user.id],
+        );
+        if (profileRows && profileRows.length > 0) {
+          user.profile = profileRows[0];
+        }
+      } catch {
+        // In-memory fallback
+      }
+    }
+
+    return user;
   }
 
   public async listUsers(
@@ -162,7 +203,8 @@ export class UserService {
       .createQueryBuilder('user')
       .leftJoinAndSelect('user.profile', 'profile')
       .where('user.project_id = :projectId', { projectId })
-      .andWhere('user.deleted_at IS NULL');
+      .andWhere('user.deleted_at IS NULL')
+      .andWhere('user.role != :superAdminRole', { superAdminRole: 'super_admin' });
 
     if (query?.role) {
       qb.andWhere('user.role = :role', { role: query.role });
@@ -183,6 +225,27 @@ export class UserService {
     qb.orderBy('user.created_at', 'DESC').skip(skip).take(limit);
 
     const [users, total] = await qb.getManyAndCount();
+
+    if (users.length > 0) {
+      try {
+        const userIds = users.map((u) => u.id);
+        const profileRows = await this.userRepo.manager.query(
+          `SELECT * FROM "user_profiles" WHERE "user_id" = ANY($1)`,
+          [userIds],
+        );
+        if (profileRows && profileRows.length > 0) {
+          const profileMap = new Map(profileRows.map((p: any) => [p.user_id, p]));
+          for (const u of users) {
+            if (profileMap.has(u.id)) {
+              u.profile = profileMap.get(u.id) as UserProfile;
+            }
+          }
+        }
+      } catch {
+        // In-memory fallback
+      }
+    }
+
     const safeUsers = users.map((u) => this.sanitizeUser(u));
 
     return formatPaginatedResponse(safeUsers, total, page, limit);
@@ -221,24 +284,71 @@ export class UserService {
     if (dto.avatar !== undefined) user.avatar = dto.avatar;
     if (updaterId) user.updated_by = updaterId;
 
+    if (dto.password) {
+      passwordService.validatePolicy(dto.password);
+      user.password = await passwordService.hashPassword(dto.password);
+    }
+
+    const configuredFields = configManager.getUsers().fields || [];
+    const dynamicPayload: Record<string, unknown> = {
+      ...(dto.profile || {}),
+    };
+    for (const f of configuredFields) {
+      if (dto[f.name] !== undefined) {
+        dynamicPayload[f.name] = dto[f.name];
+      }
+    }
+    const hasDynamicUpdates = Object.keys(dynamicPayload).length > 0;
+    const sanitizedProfile = hasDynamicUpdates
+      ? validateDynamicFields(dynamicPayload, configuredFields, true)
+      : null;
+
     const ds = getDataSource();
     return ds.transaction(async (manager) => {
       const savedUser = await manager.save(user);
 
-      if (dto.profile) {
-        const sanitizedProfile = validateDynamicFields(dto.profile);
-        let profile = await manager.findOne(UserProfile, { where: { user_id: id } });
-        if (!profile) {
-          profile = manager.create(UserProfile, {
-            user_id: id,
-            project_id: projectId,
-            ...sanitizedProfile,
-          });
-        } else {
-          Object.assign(profile, sanitizedProfile);
+      if (sanitizedProfile && Object.keys(sanitizedProfile).length > 0) {
+        try {
+          const keys = Object.keys(sanitizedProfile);
+          const setClauses = keys.map((k, i) => `"${k}" = $${i + 1}`).join(', ');
+          const values = [...Object.values(sanitizedProfile), id];
+          const updatedProfiles = await manager.query(
+            `UPDATE "user_profiles" SET ${setClauses}, "updated_at" = NOW() WHERE "user_id" = $${keys.length + 1} RETURNING *`,
+            values,
+          );
+          if (updatedProfiles && updatedProfiles.length > 0) {
+            savedUser.profile = updatedProfiles[0];
+          }
+        } catch {
+          // Fallback to TypeORM save
+          let profile = await manager.findOne(UserProfile, { where: { user_id: id } });
+          if (!profile) {
+            profile = manager.create(UserProfile, {
+              user_id: id,
+              project_id: projectId,
+              ...sanitizedProfile,
+            });
+          } else {
+            Object.assign(profile, sanitizedProfile);
+          }
+          await manager.save(profile);
+          savedUser.profile = profile;
         }
-        await manager.save(profile);
-        savedUser.profile = profile;
+      } else {
+        try {
+          const profileRows = await manager.query(
+            `SELECT * FROM "user_profiles" WHERE "user_id" = $1`,
+            [id],
+          );
+          if (profileRows && profileRows.length > 0) {
+            savedUser.profile = profileRows[0];
+          }
+        } catch {
+          const existingProfile = await manager.findOne(UserProfile, { where: { user_id: id } });
+          if (existingProfile) {
+            savedUser.profile = existingProfile;
+          }
+        }
       }
 
       return this.sanitizeUser(savedUser);
@@ -266,14 +376,7 @@ export class UserService {
   public async updateProfile(
     userId: string,
     projectId: string,
-    dto: {
-      firstName?: string;
-      lastName?: string;
-      phone?: string;
-      avatar?: string;
-      language?: string;
-      profile?: Record<string, unknown>;
-    },
+    dto: IUpdateUserDto,
   ): Promise<Partial<User>> {
     return this.updateUser(userId, projectId, dto, userId);
   }

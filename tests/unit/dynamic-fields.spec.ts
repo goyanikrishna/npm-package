@@ -77,6 +77,16 @@ describe('Dynamic Fields System', () => {
 
       expect(() => validateDynamicFields(input, fieldsConfig)).toThrow(DynamicFieldValidationError);
     });
+
+    it('should allow partial update without required fields when isPartial is true', () => {
+      const input = {
+        bio: 'Updated bio only',
+      };
+
+      const result = validateDynamicFields(input, fieldsConfig, true);
+      expect(result.bio).toBe('Updated bio only');
+      expect(result.department).toBeUndefined();
+    });
   });
 
   describe('Migration Generator', () => {

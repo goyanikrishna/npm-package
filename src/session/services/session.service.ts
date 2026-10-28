@@ -66,13 +66,18 @@ export class SessionService {
     return this.repo.save(session);
   }
 
-  public async findValidSession(refreshToken: string): Promise<Session> {
+  public async findValidSession(refreshToken: string, projectId?: string): Promise<Session> {
     if (!refreshToken) {
       throw new InvalidTokenError('Refresh token is required');
     }
 
+    const where: { refresh_token: string; project_id?: string } = { refresh_token: refreshToken };
+    if (projectId) {
+      where.project_id = projectId;
+    }
+
     const session = await this.repo.findOne({
-      where: { refresh_token: refreshToken },
+      where,
       relations: ['user'],
     });
 
@@ -91,8 +96,12 @@ export class SessionService {
     return session;
   }
 
-  public async revokeSession(refreshToken: string): Promise<void> {
-    const session = await this.repo.findOne({ where: { refresh_token: refreshToken } });
+  public async revokeSession(refreshToken: string, projectId?: string): Promise<void> {
+    const where: { refresh_token: string; project_id?: string } = { refresh_token: refreshToken };
+    if (projectId) {
+      where.project_id = projectId;
+    }
+    const session = await this.repo.findOne({ where });
     if (session) {
       session.is_revoked = true;
       await this.repo.save(session);

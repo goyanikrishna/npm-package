@@ -105,17 +105,18 @@ export class AuthService {
   public async refreshToken(
     refreshToken: string,
     clientMeta?: IClientMetadata,
+    projectId?: string,
   ): Promise<IAuthTokens> {
-    const session = await sessionService.findValidSession(refreshToken);
+    const session = await sessionService.findValidSession(refreshToken, projectId);
     const user = await userService.getUserById(session.user_id, session.project_id);
 
     if (user.status !== 'active') {
-      await sessionService.revokeSession(refreshToken);
+      await sessionService.revokeSession(refreshToken, projectId);
       throw new UserInactiveError('User account is inactive');
     }
 
     // Revoke old session token (Token Rotation - Decision D04)
-    await sessionService.revokeSession(refreshToken);
+    await sessionService.revokeSession(refreshToken, projectId);
 
     // Issue new token pair
     return this.generateTokenPair(user.id, session.project_id, user.email, user.role, clientMeta);
@@ -178,7 +179,8 @@ export class AuthService {
       throw new UserNotFoundError();
     }
 
-    const isMatch = await userWithPassword.checkIfPasswordMatch(dto.currentPassword);
+    const currentPassword = dto.currentPassword || (dto as any).oldPassword;
+    const isMatch = await userWithPassword.checkIfPasswordMatch(currentPassword);
     if (!isMatch) {
       throw new NotMatchException('Current password does not match');
     }

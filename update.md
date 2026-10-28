@@ -27,7 +27,7 @@ Added utilities to format project slugs and normalize email addresses.
 Added checks to reject requests from invalid or inactive projects.
 ```
 
-### 22-Oct-2026 (Day 2: 05:45 hrs) — Ready to Send
+### 22-Oct-2026 (Day 2: 05:45 hrs) — Submitted
 
 ```text
 Authentication & Management System
@@ -56,6 +56,39 @@ Authentication & Management System
 - Multi-Field Search: Added case-insensitive search across first name, last name, and email fields.
 - Status & Role Filtering: Added query filters to easily filter user lists by status and assigned role.
 - Soft-Delete Filter: Automatically filtered out deleted accounts (deleted_at IS NULL) from list queries.
+```
+
+### 23-Oct-2026 (Day 3: 05:30 hrs) — Submitted
+
+```text
+Authentication & Management System
+---------
+- Added dynamic profile fields so different projects can store custom user details (like employee ID, department, or birthdate) without changing backend code.
+- Supported 9 field types including text, numbers, dates, dropdowns, and yes/no checkboxes.
+- Kept core login credentials separate from custom profile details so account security stays safe and isolated.
+- Added validation checks so users can only submit valid formats and approved dropdown choices.
+- Handled required vs optional fields so mandatory profile details are not skipped.
+- Built an automated database tool that creates new profile columns safely without manual SQL queries.
+- Added database indexing on custom fields so searching through user profiles stays fast.
+- Configured automatic data cleanup so deleting a user account also removes all their profile details cleanly.
+- Wrote automated tests to confirm custom fields save, update, and validate properly across all 9 types.
+- Documented how future projects can configure and use custom fields.
+```
+
+### 26-Oct-2026 (Day 4: 07:00 hrs) — Ready to Send
+
+```text
+Authentication & Management System
+---------
+- Published the reusable backend package (node-backend-toolkit) to the public npm registry so any future project can install it with one command.
+- Built a standalone demo application (DEMO) to test the package in a live environment just like a real client application.
+- Configured multi-database isolation running two separate client projects (Acme Health and Beta Tech) simultaneously on completely independent databases.
+- Built an automatic database switcher that routes each incoming request to the right project database using the URL or request header.
+- Added and verified custom profile fields (department, license number, specialty, and experience years) in the demo project.
+- Successfully tested the end-to-end user authentication flow including self-registration, password hashing, and user login.
+- Built a custom business module (/departments) on top of the toolkit to confirm new domain features plug in easily without touching core auth code.
+- Created and tested a complete Postman API collection covering all authentication and user endpoints.
+- Handled server error middleware and added a live health check endpoint (/health) showing real-time database connection status for all active projects.
 ```
 
 ---

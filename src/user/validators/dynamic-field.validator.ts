@@ -6,6 +6,7 @@ import { DynamicFieldValidationError } from '../../errors/config.errors';
 export const validateDynamicFields = (
   data: Record<string, unknown> = {},
   fieldsConfig?: IUserFieldConfig[],
+  isPartial: boolean = false,
 ): Record<string, unknown> => {
   const configuredFields = fieldsConfig || configManager.getUsers().fields || [];
   const errors: Record<string, string> = {};
@@ -13,6 +14,10 @@ export const validateDynamicFields = (
 
   for (const field of configuredFields) {
     const value = data[field.name];
+
+    if (isPartial && value === undefined) {
+      continue;
+    }
 
     // Check required
     if (field.required && (value === undefined || value === null || value === '')) {
