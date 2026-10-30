@@ -9,7 +9,7 @@ declare global {
   namespace Express {
     interface Request {
       project?: Project;
-      projectId?: string;
+      project_id?: string;
     }
   }
 }
@@ -20,11 +20,12 @@ export const projectContextMiddleware = async (
   next: NextFunction,
 ): Promise<void> => {
   try {
+    const { params, headers } = req;
     const slugOrId =
-      req.params.project_slug ||
-      req.params.projectId ||
-      (req.headers['x-project-slug'] as string) ||
-      (req.headers['x-project-id'] as string);
+      params.project_slug ||
+      params.project_id ||
+      (headers['x-project-slug'] as string) ||
+      (headers['x-project-id'] as string);
 
     if (!slugOrId) {
       throw new ProjectNotFoundError('Project context parameter missing in request');
@@ -32,7 +33,7 @@ export const projectContextMiddleware = async (
 
     const project = await projectService.resolveProject(slugOrId);
     req.project = project;
-    req.projectId = project.id;
+    req.project_id = project.id;
 
     next();
   } catch (err) {

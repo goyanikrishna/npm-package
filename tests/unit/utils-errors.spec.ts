@@ -67,11 +67,16 @@ describe('Utilities & Error Handling', () => {
   });
 
   describe('Pagination Utility', () => {
-    it('should parse page, limit, and skip safely', () => {
+    it('should parse page, limit, and skip safely (supporting page_size)', () => {
       const parsed = parsePagination({ page: '2', limit: '25' });
       expect(parsed.page).toBe(2);
       expect(parsed.limit).toBe(25);
       expect(parsed.skip).toBe(25);
+
+      const parsedWithPageSize = parsePagination({ page: '3', page_size: '15' });
+      expect(parsedWithPageSize.page).toBe(3);
+      expect(parsedWithPageSize.limit).toBe(15);
+      expect(parsedWithPageSize.skip).toBe(30);
 
       const invalid = parsePagination({ page: '-5', limit: 'abc' });
       expect(invalid.page).toBe(1);
@@ -79,16 +84,21 @@ describe('Utilities & Error Handling', () => {
       expect(invalid.skip).toBe(0);
     });
 
-    it('should format paginated meta with totalPages, hasNext, hasPrev', () => {
+    it('should format paginated meta with snake_case total_pages, has_next, has_prev', () => {
       const items = ['a', 'b', 'c'];
       const paginated = formatPaginatedResponse(items, 50, 2, 10);
 
       expect(paginated.items).toEqual(items);
       expect(paginated.meta.total).toBe(50);
-      expect(paginated.meta.totalPages).toBe(5);
+      expect(paginated.meta.total_pages).toBe(5);
       expect(paginated.meta.page).toBe(2);
-      expect(paginated.meta.hasNext).toBe(true);
-      expect(paginated.meta.hasPrev).toBe(true);
+      expect(paginated.meta.has_next).toBe(true);
+      expect(paginated.meta.has_prev).toBe(true);
+      expect(paginated.meta.per_page).toBe(10);
+      expect(paginated.meta.current_page).toBe(2);
+      expect(paginated.meta.last_page).toBe(5);
+      expect(paginated.meta.has_next_page).toBe(true);
+      expect(paginated.meta.has_previous_page).toBe(true);
     });
   });
 

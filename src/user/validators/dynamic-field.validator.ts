@@ -13,19 +13,23 @@ export const validateDynamicFields = (
   const sanitized: Record<string, unknown> = {};
 
   for (const field of configuredFields) {
-    const value = data[field.name];
+    let val = data[field.name];
 
-    if (isPartial && value === undefined) {
+    if (isPartial && val === undefined) {
       continue;
     }
 
+    if (val === undefined && !isPartial && field.default !== undefined) {
+      val = field.default;
+    }
+
     // Check required
-    if (field.required && (value === undefined || value === null || value === '')) {
+    if (field.required && (val === undefined || val === null || val === '')) {
       errors[field.name] = `Field "${field.name}" is required`;
       continue;
     }
 
-    if (value === undefined || value === null) {
+    if (val === undefined || val === null) {
       if (field.nullable !== false) {
         sanitized[field.name] = null;
       }
@@ -36,17 +40,17 @@ export const validateDynamicFields = (
     switch (field.type) {
       case 'string':
       case 'text': {
-        if (typeof value !== 'string') {
+        if (typeof val !== 'string') {
           errors[field.name] = `Field "${field.name}" must be a string`;
-        } else if (field.maxLength && value.length > field.maxLength) {
-          errors[field.name] = `Field "${field.name}" exceeds maximum length of ${field.maxLength}`;
+        } else if (field.max_length && val.length > field.max_length) {
+          errors[field.name] = `Field "${field.name}" exceeds maximum length of ${field.max_length}`;
         } else {
-          sanitized[field.name] = value;
+          sanitized[field.name] = val;
         }
         break;
       }
       case 'integer': {
-        const num = Number(value);
+        const num = Number(val);
         if (!Number.isInteger(num)) {
           errors[field.name] = `Field "${field.name}" must be an integer`;
         } else {
@@ -55,7 +59,7 @@ export const validateDynamicFields = (
         break;
       }
       case 'decimal': {
-        const dec = Number(value);
+        const dec = Number(val);
         if (isNaN(dec)) {
           errors[field.name] = `Field "${field.name}" must be a valid number`;
         } else {
@@ -64,11 +68,11 @@ export const validateDynamicFields = (
         break;
       }
       case 'boolean': {
-        if (typeof value === 'boolean') {
-          sanitized[field.name] = value;
-        } else if (value === 'true' || value === 1) {
+        if (typeof val === 'boolean') {
+          sanitized[field.name] = val;
+        } else if (val === 'true' || val === 1) {
           sanitized[field.name] = true;
-        } else if (value === 'false' || value === 0) {
+        } else if (val === 'false' || val === 0) {
           sanitized[field.name] = false;
         } else {
           errors[field.name] = `Field "${field.name}" must be a boolean`;
@@ -77,7 +81,7 @@ export const validateDynamicFields = (
       }
       case 'date':
       case 'datetime': {
-        const date = new Date(value as string | number);
+        const date = new Date(val as string | number);
         if (isNaN(date.getTime())) {
           errors[field.name] = `Field "${field.name}" must be a valid date`;
         } else {
@@ -87,24 +91,24 @@ export const validateDynamicFields = (
       }
       case 'uuid': {
         const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
-        if (typeof value !== 'string' || !uuidRegex.test(value)) {
+        if (typeof val !== 'string' || !uuidRegex.test(val)) {
           errors[field.name] = `Field "${field.name}" must be a valid UUID`;
         } else {
-          sanitized[field.name] = value;
+          sanitized[field.name] = val;
         }
         break;
       }
       case 'enum': {
-        const validValues = field.enumValues || [];
-        if (!validValues.includes(String(value))) {
+        const validValues = field.enum_values || [];
+        if (!validValues.includes(String(val))) {
           errors[field.name] = `Field "${field.name}" must be one of: ${validValues.join(', ')}`;
         } else {
-          sanitized[field.name] = value;
+          sanitized[field.name] = val;
         }
         break;
       }
       default:
-        sanitized[field.name] = value;
+        sanitized[field.name] = val;
     }
   }
 

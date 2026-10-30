@@ -70,7 +70,7 @@ api.interceptors.response.use(
       try {
         const { data } = await axios.post(
           'https://api.yourdomain.com/api/my-project/auth/refresh-token',
-          { refreshToken },
+          { refresh_token },
         );
 
         localStorage.setItem('access_token', data.data.access_token);
@@ -170,9 +170,9 @@ Pagination response format:
     "total": 120,
     "page": 1,
     "limit": 20,
-    "totalPages": 6,
-    "hasNext": true,
-    "hasPrev": false
+    "total_pages": 6,
+    "has_next": true,
+    "has_prev": false
   }
 }
 ```
@@ -182,7 +182,7 @@ Pagination response format:
 ## 6. Important User Flow Examples
 
 ### 6.1 Registration & First Login
-1. Frontend calls `POST /api/:project_slug/auth/register` with `firstName`, `lastName`, `email`, `password`.
+1. Frontend calls `POST /api/:project_slug/auth/register` with `first_name`, `last_name`, `email`, `password`.
 2. Response contains user object and tokens.
 3. Store tokens and navigate to dashboard.
 
@@ -190,5 +190,5 @@ Pagination response format:
 1. User enters email -> `POST /api/:project_slug/auth/forgot-password`.
 2. User receives email with link containing `?token=XYZ`.
 3. User navigates to `/reset-password?token=XYZ`.
-4. User submits new password -> `POST /api/:project_slug/auth/reset-password` with `{ token, newPassword }`.
+4. User submits new password -> `POST /api/:project_slug/auth/reset-password` with `{ token, new_password }`.
 5. Frontend redirects to login on success.

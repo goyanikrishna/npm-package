@@ -219,7 +219,7 @@ Authentication & Management System
   - Returned HTTP 401 `AuthException` when tokens are missing, expired, or invalid.
 
 - **Cross-Tenant Authorization Guard (01:15 hrs)**
-  - Added tenant verification logic comparing token's `project_id` against the request's active `req.projectId`.
+  - Added tenant verification logic comparing token's `project_id` against the request's active `req.project_id`.
   - Blocked cross-tenant access attempts immediately with a 403 `ProjectMismatchError`.
   - Verified that users from Project A cannot access routes or data belonging to Project B.
 

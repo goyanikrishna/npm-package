@@ -10,17 +10,9 @@ import {
   InvalidFileTypeError,
   StorageError,
 } from '../../errors/storage.errors';
+import { IUploadFileInput, IFileValidationOptions } from '../types';
 
-export interface IUploadFileInput {
-  buffer: Buffer;
-  mimeType: string;
-  originalname: string;
-}
-
-export interface IFileValidationOptions {
-  allowedMimeTypes?: string[];
-  maxSizeBytes?: number; // default: 10MB
-}
+export { IUploadFileInput, IFileValidationOptions };
 
 export class StorageService {
   private provider: IStorageProvider | null = null;
@@ -51,17 +43,17 @@ export class StorageService {
   }
 
   public validateFile(file: IUploadFileInput, options: IFileValidationOptions = {}): void {
-    const maxSizeBytes = options.maxSizeBytes || 10 * 1024 * 1024; // 10 MB
+    const max_size_bytes = options.max_size_bytes || 10 * 1024 * 1024; // 10 MB
 
-    if (file.buffer.length > maxSizeBytes) {
-      const maxMb = Math.round(maxSizeBytes / (1024 * 1024));
+    if (file.buffer.length > max_size_bytes) {
+      const maxMb = Math.round(max_size_bytes / (1024 * 1024));
       throw new FileSizeExceededError(`File size exceeds maximum allowed size of ${maxMb}MB`);
     }
 
-    if (options.allowedMimeTypes && options.allowedMimeTypes.length > 0) {
-      if (!options.allowedMimeTypes.includes(file.mimeType.toLowerCase())) {
+    if (options.allowed_mime_types && options.allowed_mime_types.length > 0) {
+      if (!options.allowed_mime_types.includes(file.mimeType.toLowerCase())) {
         throw new InvalidFileTypeError(
-          `Invalid file type "${file.mimeType}". Allowed: ${options.allowedMimeTypes.join(', ')}`,
+          `Invalid file type "${file.mimeType}". Allowed: ${options.allowed_mime_types.join(', ')}`,
         );
       }
     }

@@ -12,16 +12,16 @@ describe('JWT & Password Services', () => {
       database: { host: 'localhost', port: 5432, username: 'pg', database: 'db' },
       auth: {
         jwt: {
-          accessTokenSecret: 'super-secret-access-token-key-12345',
-          refreshTokenSecret: 'super-secret-refresh-token-key-12345',
-          accessTokenExpiry: '15m',
+          access_token_secret: 'super-secret-access-token-key-12345',
+          refresh_token_secret: 'super-secret-refresh-token-key-12345',
+          access_token_expiry: '15m',
         },
         password: {
-          minLength: 8,
-          requireUppercase: true,
-          requireLowercase: true,
-          requireDigit: true,
-          requireSpecialChar: false,
+          min_length: 8,
+          require_uppercase: true,
+          require_lowercase: true,
+          require_digit: true,
+          require_special_char: false,
         },
       },
       superAdmin: {
@@ -101,7 +101,7 @@ describe('JWT & Password Services', () => {
     });
 
     it('should enforce special characters when configured', () => {
-      const policyWithSpecial = { requireSpecialChar: true };
+      const policyWithSpecial = { require_special_char: true };
 
       expect(() => passwordService.validatePolicy('NoSpecial123', policyWithSpecial)).toThrow(
         BadRequestException,

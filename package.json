@@ -1,6 +1,6 @@
 {
   "name": "node-backend-toolkit",
-  "version": "1.0.2",
+  "version": "1.0.3",
   "description": "A fully dynamic, multi-project reusable backend package for authentication, user management, roles, permissions, email, and storage.",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
@@ -37,7 +37,18 @@
     "format:check": "prettier --check \"src/**/*.ts\" \"tests/**/*.ts\"",
     "type-check": "tsc --noEmit",
     "clean": "rimraf dist",
-    "prepublishOnly": "npm run build && npm run test"
+    "prepublishOnly": "npm run build && npm run test",
+    "prestart": "npm run build",
+    "start": "node -r ts-node/register/transpile-only -r tsconfig-paths/register dist/index.js",
+    "format:src": "prettier --write \"src/**/*.ts\"",
+    "test:ci": "echo \"Running CI tests...\"",
+    "typeorm": "typeorm-ts-node-commonjs -d src/database/cli-datasource.ts",
+    "migration:generate": "typeorm-ts-node-commonjs migration:generate src/database/migrations/Migration -d src/database/cli-datasource.ts",
+    "migration:create": "typeorm-ts-node-commonjs migration:create src/database/migrations/Migration",
+    "migration:run": "ts-node src/database/run-migrations.ts",
+    "migration:revert": "ts-node src/database/revert-migrations.ts",
+    "db:seed": "ts-node src/database/seed.ts",
+    "prepare": "husky"
   },
   "keywords": [
     "backend",

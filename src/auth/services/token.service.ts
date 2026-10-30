@@ -11,19 +11,23 @@ export class TokenService {
   }
 
   public async createPasswordResetToken(
-    projectId: string,
+    project_id: string,
     email: string,
     expiryMinutes: number = 60,
   ): Promise<PasswordResetToken> {
+    const normalizedEmail = email.toLowerCase().trim();
     // Invalidate existing tokens for this project + email
-    await this.repo.update({ project_id: projectId, email, is_used: false }, { is_used: true });
+    await this.repo.update(
+      { project_id, email: normalizedEmail, is_used: false },
+      { is_used: true },
+    );
 
     const tokenString = crypto.randomBytes(32).toString('hex');
     const expiresAt = new Date(Date.now() + expiryMinutes * 60 * 1000);
 
     const record = this.repo.create({
-      project_id: projectId,
-      email: email.toLowerCase().trim(),
+      project_id,
+      email: normalizedEmail,
       token: tokenString,
       is_used: false,
       expires_at: expiresAt,
@@ -32,12 +36,20 @@ export class TokenService {
     return this.repo.save(record);
   }
 
-  public async verifyPasswordResetToken(token: string): Promise<PasswordResetToken> {
+  public async verifyPasswordResetToken(
+    token: string,
+    project_id?: string,
+  ): Promise<PasswordResetToken> {
     if (!token) {
       throw new InvalidTokenError('Password reset token is required');
     }
 
-    const record = await this.repo.findOne({ where: { token } });
+    const where: { token: string; project_id?: string } = { token };
+    if (project_id) {
+      where.project_id = project_id;
+    }
+
+    const record = await this.repo.findOne({ where });
 
     if (!record || record.is_used) {
       throw new InvalidTokenError('Invalid or already used password reset token');

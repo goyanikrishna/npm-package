@@ -487,22 +487,22 @@ await initializeBackend({
 
   auth: {
     jwt: {
-      accessTokenSecret: process.env.JWT_ACCESS_SECRET,
-      refreshTokenSecret: process.env.JWT_REFRESH_SECRET,
-      accessTokenExpiry: '15m',     // default: '15m'
-      refreshTokenExpiry: '7d',     // default: '7d'
+      access_token_secret: process.env.JWT_ACCESS_SECRET,
+      refresh_token_secret: process.env.JWT_REFRESH_SECRET,
+      access_token_expiry: '15m',     // default: '15m'
+      refresh_token_expiry: '7d',     // default: '7d'
     },
     password: {
-      minLength: 8,                 // default: 8
-      requireUppercase: true,       // default: true
-      requireLowercase: true,       // default: true
-      requireDigit: true,           // default: true
-      requireSpecialChar: false,    // default: false
-      saltRounds: 12,               // default: 12
+      min_length: 8,                 // default: 8
+      require_uppercase: true,       // default: true
+      require_lowercase: true,       // default: true
+      require_digit: true,           // default: true
+      require_special_char: false,    // default: false
+      salt_rounds: 12,               // default: 12
     },
     registration: {
       defaultRole: 'user',          // default: first non-super_admin role
-      defaultStatus: 'active',      // default: 'active'
+      default_status: 'active',      // default: 'active'
       requireEmailVerification: false, // default: false
     },
   },
@@ -513,7 +513,7 @@ await initializeBackend({
         name: 'department',
         type: 'string',
         nullable: true,
-        maxLength: 100,
+        max_length: 100,
       },
       {
         name: 'joining_date',
@@ -544,8 +544,8 @@ await initializeBackend({
 
   superAdmin: {
     email: process.env.SUPER_ADMIN_EMAIL!,
-    firstName: process.env.SUPER_ADMIN_FNAME!,
-    lastName: process.env.SUPER_ADMIN_LNAME!,
+    first_name: process.env.SUPER_ADMIN_FNAME!,
+    last_name: process.env.SUPER_ADMIN_LNAME!,
     password: process.env.SUPER_ADMIN_PASSWORD!,
   },
 
@@ -564,12 +564,12 @@ await initializeBackend({
   },
 
   branding: {
-    projectName: 'Therapist Platform',
-    logoUrl: 'https://example.com/logo.png',
-    primaryColor: '#4F46E5',
-    supportEmail: 'support@example.com',
-    frontendUrl: 'https://app.example.com',
-    companyName: 'Example Corp',
+    project_name: 'Therapist Platform',
+    logo_url: 'https://example.com/logo.png',
+    primary_color: '#4F46E5',
+    support_email: 'support@example.com',
+    frontend_url: 'https://app.example.com',
+    company_name: 'Example Corp',
   },
 
   storage: {
@@ -577,9 +577,9 @@ await initializeBackend({
     bucket: process.env.R2_BUCKET!,
     region: 'auto',
     accountId: process.env.R2_ACCOUNT_ID!,
-    accessKeyId: process.env.R2_ACCESS_KEY_ID!,
-    secretAccessKey: process.env.R2_SECRET_ACCESS_KEY!,
-    publicUrl: process.env.R2_PUBLIC_URL!,
+    access_key_id: process.env.R2_ACCESS_KEY_ID!,
+    secret_access_key: process.env.R2_SECRET_ACCESS_KEY!,
+    public_url: process.env.R2_PUBLIC_URL!,
   },
 });
 ```

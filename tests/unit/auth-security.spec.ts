@@ -31,7 +31,7 @@ describe('Security & Authorization Middleware', () => {
 
       await projectContextMiddleware(req, res, next);
       expect(req.project).toEqual(mockProject);
-      expect(req.projectId).toBe('proj-123');
+      expect(req.project_id).toBe('proj-123');
       expect(next).toHaveBeenCalledWith();
     });
   });
@@ -46,7 +46,7 @@ describe('Security & Authorization Middleware', () => {
       expect(next).toHaveBeenCalledWith(expect.any(AuthException));
     });
 
-    it('should throw ProjectMismatchError if token project_id does not match req.projectId', async () => {
+    it('should throw ProjectMismatchError if token project_id does not match req.project_id', async () => {
       jest.spyOn(jwtService, 'verifyAccessToken').mockReturnValue({
         id: 'user-1',
         project_id: 'project-A',
@@ -56,7 +56,7 @@ describe('Security & Authorization Middleware', () => {
 
       const req: any = {
         headers: { authorization: 'Bearer valid.jwt.token' },
-        projectId: 'project-B', // Different project!
+        project_id: 'project-B', // Different project!
       };
       const res: any = {};
       const next = jest.fn();
@@ -84,7 +84,7 @@ describe('Security & Authorization Middleware', () => {
 
       const req: any = {
         headers: { authorization: 'Bearer valid.jwt.token' },
-        projectId: 'project-A',
+        project_id: 'project-A',
       };
       const res: any = {};
       const next = jest.fn();

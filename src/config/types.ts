@@ -11,15 +11,15 @@ export interface IUserFieldConfig {
   unique?: boolean;
   indexed?: boolean;
   default?: unknown;
-  maxLength?: number;
-  enumValues?: string[];
+  max_length?: number;
+  enum_values?: string[];
   description?: string;
 }
 
 export interface IUsersConfig {
   fields?: IUserFieldConfig[];
   statuses?: string[];
-  defaultStatus?: string;
+  default_status?: string;
 }
 
 export interface IProjectConfig {
@@ -42,27 +42,27 @@ export interface IDatabaseConfig {
 }
 
 export interface IJwtConfig {
-  accessTokenSecret: string;
-  refreshTokenSecret: string;
-  accessTokenExpiry?: string | number; // e.g. '15m' or seconds
-  refreshTokenExpiry?: string | number; // e.g. '7d' or seconds
+  access_token_secret: string;
+  refresh_token_secret: string;
+  access_token_expiry?: string | number; // e.g. '15m' or seconds
+  refresh_token_expiry?: string | number; // e.g. '7d' or seconds
   issuer?: string;
   audience?: string;
 }
 
 export interface IPasswordPolicyConfig {
-  minLength?: number; // default: 8
-  maxLength?: number; // default: 128
-  requireUppercase?: boolean; // default: true
-  requireLowercase?: boolean; // default: true
-  requireDigit?: boolean; // default: true
-  requireSpecialChar?: boolean; // default: false
-  saltRounds?: number; // default: 12
+  min_length?: number; // default: 8
+  max_length?: number; // default: 128
+  require_uppercase?: boolean; // default: true
+  require_lowercase?: boolean; // default: true
+  require_digit?: boolean; // default: true
+  require_special_char?: boolean; // default: false
+  salt_rounds?: number; // default: 12
 }
 
 export interface IRegistrationConfig {
   defaultRole?: string; // default: 'user'
-  defaultStatus?: string; // default: 'active'
+  default_status?: string; // default: 'active'
   requireEmailVerification?: boolean; // default: false
   allowedRoles?: string[]; // roles allowed for public registration
 }
@@ -76,14 +76,14 @@ export interface IAuthConfig {
 export interface IRoleConfig {
   name: string;
   description?: string;
-  isSystem?: boolean;
+  is_system?: boolean;
   permissions: string[];
 }
 
 export interface ISuperAdminConfig {
   email: string;
-  firstName: string;
-  lastName: string;
+  first_name?: string;
+  last_name?: string;
   password: string;
   phone?: string;
 }
@@ -105,30 +105,30 @@ export interface IResendConfig {
 export interface IEmailConfig {
   provider: 'smtp' | 'resend';
   from: string;
-  fromName?: string;
+  from_name?: string;
   smtp?: ISmtpConfig;
   resend?: IResendConfig;
-  templatesDir?: string;
+  templates_dir?: string;
 }
 
 export interface IBrandingConfig {
-  projectName?: string;
-  companyName?: string;
-  logoUrl?: string;
-  primaryColor?: string;
-  supportEmail?: string;
-  frontendUrl?: string;
+  project_name?: string;
+  company_name?: string;
+  logo_url?: string;
+  primary_color?: string;
+  support_email?: string;
+  frontend_url?: string;
 }
 
 export interface IS3StorageConfig {
   provider: 's3';
   bucket: string;
   region: string;
-  accessKeyId: string;
-  secretAccessKey: string;
+  access_key_id: string;
+  secret_access_key: string;
   endpoint?: string;
-  publicUrl?: string;
-  signedUrlExpirySeconds?: number;
+  public_url?: string;
+  signed_url_expiry_seconds?: number;
 }
 
 export interface IR2StorageConfig {
@@ -136,10 +136,10 @@ export interface IR2StorageConfig {
   bucket: string;
   region?: string;
   accountId: string;
-  accessKeyId: string;
-  secretAccessKey: string;
-  publicUrl?: string;
-  signedUrlExpirySeconds?: number;
+  access_key_id: string;
+  secret_access_key: string;
+  public_url?: string;
+  signed_url_expiry_seconds?: number;
 }
 
 export type IStorageConfig = IS3StorageConfig | IR2StorageConfig;

@@ -16,26 +16,26 @@ export class R2StorageProvider implements IStorageProvider {
   public readonly name = 'r2';
   private client: S3Client;
   private bucket: string;
-  private publicUrl?: string;
+  private public_url?: string;
 
   constructor(config: IR2StorageConfig) {
     this.bucket = config.bucket;
-    this.publicUrl = config.publicUrl;
+    this.public_url = config.public_url;
 
     this.client = new S3Client({
       region: config.region || 'auto',
-      endpoint: `https://${config.accountId}.r2.cloudflarestorage.com`,
+      endpoint: `https://${config.account_id}.r2.cloudflarestorage.com`,
       credentials: {
-        accessKeyId: config.accessKeyId,
-        secretAccessKey: config.secretAccessKey,
+        access_key_id: config.access_key_id,
+        secret_access_key: config.secret_access_key,
       },
     });
   }
 
   private cleanKey(key: string): string {
     if (!key) return '';
-    if (this.publicUrl && key.startsWith(this.publicUrl)) {
-      return key.replace(`${this.publicUrl.replace(/\/$/, '')}/`, '');
+    if (this.public_url && key.startsWith(this.public_url)) {
+      return key.replace(`${this.public_url.replace(/\/$/, '')}/`, '');
     }
     return key.replace(/^\/+/, '');
   }
@@ -51,13 +51,13 @@ export class R2StorageProvider implements IStorageProvider {
         Bucket: this.bucket,
         Key: cleanKey,
         Body: body,
-        ContentType: mimeType,
+        content_type: mimeType,
       });
 
       await this.client.send(command);
 
-      if (this.publicUrl) {
-        return `${this.publicUrl.replace(/\/$/, '')}/${cleanKey}`;
+      if (this.public_url) {
+        return `${this.public_url.replace(/\/$/, '')}/${cleanKey}`;
       }
       return cleanKey;
     } catch (err: unknown) {
@@ -107,8 +107,8 @@ export class R2StorageProvider implements IStorageProvider {
     const cleanKey = this.cleanKey(key);
     if (!cleanKey) return '';
 
-    if (this.publicUrl) {
-      return `${this.publicUrl.replace(/\/$/, '')}/${cleanKey}`;
+    if (this.public_url) {
+      return `${this.public_url.replace(/\/$/, '')}/${cleanKey}`;
     }
 
     try {
@@ -154,10 +154,10 @@ export class R2StorageProvider implements IStorageProvider {
       const res = await this.client.send(command);
 
       return {
-        contentLength: res.ContentLength ?? 0,
-        contentType: res.ContentType ?? 'application/octet-stream',
+        content_length: res.content_length ?? 0,
+        content_type: res.content_type ?? 'application/octet-stream',
         etag: res.ETag,
-        lastModified: res.LastModified,
+        last_modified: res.last_modified,
       };
     } catch (err: unknown) {
       const msg = err instanceof Error ? err.message : 'Unknown R2 error';

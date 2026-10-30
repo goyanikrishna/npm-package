@@ -2,6 +2,15 @@
 
 All notable changes to `node-backend-toolkit` will be documented in this file.
 
+## [1.0.3] - 2026-10-28
+
+### Changed
+- **Unified `snake_case` Protocol**: Standardized all API contracts, schemas, request payloads, response bodies, and query parameters to `snake_case` for complete frontend predictability and integration standard:
+  - **Auth Schemas & DTOs**: Standardized registration, profile updates, and user management to accept `first_name`, `last_name`, `current_password`, `new_password`, `refresh_token` (with backward compatibility aliases preserved).
+  - **Pagination Metadata**: Standardized `IPaginatedMeta` to return `total_pages`, `has_next`, and `has_prev` alongside `total`, `page`, and `limit`.
+  - **Query Parameters**: Added `page_size` query parameter support in `parsePagination` and `userParams.list` alongside `limit`.
+- **Dynamic Profile Retrieval**: Enhanced TypeORM raw SQL execution across user queries to prevent dropping unmapped dynamic columns on `user_profiles`.
+
 ## [1.0.2] - 2026-10-27
 
 ### Fixed

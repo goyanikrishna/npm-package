@@ -31,9 +31,9 @@ When you add new dynamic fields in `toolkit.config.json` (or via `initializeBack
 {
   "users": {
     "fields": [
-      { "name": "department", "type": "string", "maxLength": 100, "required": true },
+      { "name": "department", "type": "string", "max_length": 100, "required": true },
       { "name": "years_experience", "type": "integer", "nullable": true },
-      { "name": "specialty", "type": "enum", "enumValues": ["cardiology", "neurology"] }
+      { "name": "specialty", "type": "enum", "enum_values": ["cardiology", "neurology"] }
     ]
   }
 }

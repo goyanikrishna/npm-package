@@ -9,13 +9,9 @@ import {
   SessionRevokedError,
   TokenExpiredError,
 } from '../../errors/auth.errors';
+import { ICreateSessionOptions } from '../types';
 
-export interface ICreateSessionOptions {
-  userId: string;
-  projectId: string;
-  ipAddress?: string;
-  userAgent?: string;
-}
+export { ICreateSessionOptions };
 
 export class SessionService {
   private get repo(): Repository<Session> {
@@ -47,18 +43,18 @@ export class SessionService {
 
   public async createSession(options: ICreateSessionOptions): Promise<Session> {
     const authConfig = configManager.getAuth();
-    const expirySetting = authConfig.jwt.refreshTokenExpiry || '7d';
+    const expirySetting = authConfig.jwt.refresh_token_expiry || '7d';
     const durationMs = this.parseDurationMs(expirySetting);
     const expiresAt = new Date(Date.now() + durationMs);
 
     const refreshToken = crypto.randomBytes(48).toString('hex');
 
     const session = this.repo.create({
-      user_id: options.userId,
-      project_id: options.projectId,
+      user_id: options.user_id,
+      project_id: options.project_id,
       refresh_token: refreshToken,
-      ip_address: options.ipAddress || null,
-      user_agent: options.userAgent || null,
+      ip_address: options.ip_address || null,
+      user_agent: options.user_agent || null,
       is_revoked: false,
       expires_at: expiresAt,
     });
@@ -66,14 +62,14 @@ export class SessionService {
     return this.repo.save(session);
   }
 
-  public async findValidSession(refreshToken: string, projectId?: string): Promise<Session> {
+  public async findValidSession(refreshToken: string, project_id?: string): Promise<Session> {
     if (!refreshToken) {
       throw new InvalidTokenError('Refresh token is required');
     }
 
     const where: { refresh_token: string; project_id?: string } = { refresh_token: refreshToken };
-    if (projectId) {
-      where.project_id = projectId;
+    if (project_id) {
+      where.project_id = project_id;
     }
 
     const session = await this.repo.findOne({
@@ -96,10 +92,10 @@ export class SessionService {
     return session;
   }
 
-  public async revokeSession(refreshToken: string, projectId?: string): Promise<void> {
+  public async revokeSession(refreshToken: string, project_id?: string): Promise<void> {
     const where: { refresh_token: string; project_id?: string } = { refresh_token: refreshToken };
-    if (projectId) {
-      where.project_id = projectId;
+    if (project_id) {
+      where.project_id = project_id;
     }
     const session = await this.repo.findOne({ where });
     if (session) {
@@ -108,8 +104,8 @@ export class SessionService {
     }
   }
 
-  public async revokeAllUserSessions(userId: string): Promise<void> {
-    await this.repo.update({ user_id: userId }, { is_revoked: true });
+  public async revokeAllUserSessions(user_id: string): Promise<void> {
+    await this.repo.update({ user_id }, { is_revoked: true });
   }
 
   public async cleanupExpiredSessions(): Promise<number> {

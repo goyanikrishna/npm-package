@@ -40,7 +40,7 @@ describe('Storage Service', () => {
         originalname: 'avatar.png',
       };
 
-      expect(() => storageService.validateFile(file, { maxSizeBytes: 10 * 1024 * 1024 })).toThrow(
+      expect(() => storageService.validateFile(file, { max_size_bytes: 10 * 1024 * 1024 })).toThrow(
         FileSizeExceededError,
       );
     });
@@ -54,7 +54,7 @@ describe('Storage Service', () => {
 
       expect(() =>
         storageService.validateFile(file, {
-          allowedMimeTypes: ['image/jpeg', 'image/png'],
+          allowed_mime_types: ['image/jpeg', 'image/png'],
         }),
       ).toThrow(InvalidFileTypeError);
     });
@@ -68,8 +68,8 @@ describe('Storage Service', () => {
 
       expect(() =>
         storageService.validateFile(file, {
-          allowedMimeTypes: ['image/png'],
-          maxSizeBytes: 5 * 1024 * 1024,
+          allowed_mime_types: ['image/png'],
+          max_size_bytes: 5 * 1024 * 1024,
         }),
       ).not.toThrow();
     });
@@ -85,8 +85,8 @@ describe('Storage Service', () => {
         getFileUrl: jest.fn().mockResolvedValue('https://cdn.example.com/signed-url'),
         fileExists: jest.fn().mockResolvedValue(true),
         getFileMetadata: jest.fn().mockResolvedValue({
-          contentLength: 1024,
-          contentType: 'image/png',
+          content_length: 1024,
+          content_type: 'image/png',
         }),
       };
 

@@ -4,13 +4,9 @@ import { IEmailProvider } from '../providers/email-provider.interface';
 import { SmtpProvider } from '../providers/smtp.provider';
 import { ResendProvider } from '../providers/resend.provider';
 import { templateService } from './template.service';
+import { EmailQueueHandler } from '../types';
 
-export type EmailQueueHandler = (job: {
-  to: string;
-  subject: string;
-  html: string;
-  from?: string;
-}) => Promise<void>;
+export { EmailQueueHandler };
 
 export class EmailService {
   private provider: IEmailProvider | null = null;
@@ -73,7 +69,7 @@ export class EmailService {
     data: { firstName: string; loginUrl?: string },
   ): Promise<void> {
     const branding = configManager.getBranding();
-    await this.send(to, `Welcome to ${branding.projectName}!`, 'welcome', data);
+    await this.send(to, `Welcome to ${branding.project_name}!`, 'welcome', data);
   }
 
   public async sendForgotPasswordEmail(
@@ -83,11 +79,11 @@ export class EmailService {
     const branding = configManager.getBranding();
     const resetUrl =
       data.resetUrl ||
-      (branding.frontendUrl
-        ? `${branding.frontendUrl}/reset-password?token=${data.token}`
+      (branding.frontend_url
+        ? `${branding.frontend_url}/reset-password?token=${data.token}`
         : undefined);
 
-    await this.send(to, `Reset your password for ${branding.projectName}`, 'forgot-password', {
+    await this.send(to, `Reset your password for ${branding.project_name}`, 'forgot-password', {
       ...data,
       resetUrl,
     });
@@ -97,7 +93,7 @@ export class EmailService {
     const branding = configManager.getBranding();
     await this.send(
       to,
-      `Your ${branding.projectName} password has been reset`,
+      `Your ${branding.project_name} password has been reset`,
       'password-reset',
       {},
     );
@@ -107,7 +103,7 @@ export class EmailService {
     const branding = configManager.getBranding();
     await this.send(
       to,
-      `Security Notice: ${branding.projectName} password changed`,
+      `Security Notice: ${branding.project_name} password changed`,
       'password-changed',
       {},
     );
@@ -117,7 +113,7 @@ export class EmailService {
     const branding = configManager.getBranding();
     await this.send(
       to,
-      `Your ${branding.projectName} account has been deleted`,
+      `Your ${branding.project_name} account has been deleted`,
       'account-deleted',
       {},
     );

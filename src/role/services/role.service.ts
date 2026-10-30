@@ -9,19 +9,9 @@ import {
   RoleNotFoundError,
   SystemRoleProtectedError,
 } from '../../errors/role.errors';
+import { ICreateRoleDto, IUpdateRoleDto } from '../types';
 
-export interface ICreateRoleDto {
-  name: string;
-  description?: string;
-  isSystem?: boolean;
-  permissionKeys?: string[];
-}
-
-export interface IUpdateRoleDto {
-  name?: string;
-  description?: string;
-  permissionKeys?: string[];
-}
+export { ICreateRoleDto, IUpdateRoleDto };
 
 export const DEFAULT_PERMISSIONS = [
   { key: 'users:create', name: 'Create Users', module: 'users' },
@@ -71,9 +61,9 @@ export class RoleService {
     return results;
   }
 
-  public async createRole(projectId: string, dto: ICreateRoleDto): Promise<Role> {
+  public async createRole(project_id: string, dto: ICreateRoleDto): Promise<Role> {
     const existing = await this.roleRepo.findOne({
-      where: { project_id: projectId, name: dto.name },
+      where: { project_id: project_id, name: dto.name },
     });
 
     if (existing) {
@@ -81,16 +71,16 @@ export class RoleService {
     }
 
     const role = this.roleRepo.create({
-      project_id: projectId,
+      project_id,
       name: dto.name,
       description: dto.description || null,
-      is_system: dto.isSystem ?? false,
+      is_system: dto.is_system ?? false,
     });
 
     const savedRole = await this.roleRepo.save(role);
 
-    if (dto.permissionKeys && dto.permissionKeys.length > 0) {
-      await this.assignPermissions(savedRole.id, dto.permissionKeys);
+    if (dto.permission_keys && dto.permission_keys.length > 0) {
+      await this.assignPermissions(savedRole.id, dto.permission_keys);
     }
 
     return this.getRoleById(savedRole.id);
@@ -109,29 +99,29 @@ export class RoleService {
     return role;
   }
 
-  public async getRoleByName(projectId: string, name: string): Promise<Role | null> {
+  public async getRoleByName(project_id: string, name: string): Promise<Role | null> {
     return this.roleRepo.findOne({
-      where: { project_id: projectId, name },
+      where: { project_id, name },
       relations: ['rolePermissions', 'rolePermissions.permission'],
     });
   }
 
-  public async listRoles(projectId: string): Promise<Role[]> {
+  public async listRoles(project_id: string): Promise<Role[]> {
     return this.roleRepo.find({
-      where: { project_id: projectId },
+      where: { project_id },
       relations: ['rolePermissions', 'rolePermissions.permission'],
       order: { created_at: 'ASC' },
     });
   }
 
-  public async assignPermissions(roleId: string, permissionKeys: string[]): Promise<void> {
+  public async assignPermissions(roleId: string, permission_keys: string[]): Promise<void> {
     // Delete existing permissions for role
     await this.rolePermissionRepo.delete({ role_id: roleId });
 
-    if (!permissionKeys || permissionKeys.length === 0) return;
+    if (!permission_keys || permission_keys.length === 0) return;
 
     const permissions = await this.permissionRepo.find({
-      where: { key: In(permissionKeys) },
+      where: { key: In(permission_keys) },
     });
 
     const rolePermissions = permissions.map((p) =>
@@ -146,10 +136,10 @@ export class RoleService {
     }
   }
 
-  public async updateRole(id: string, projectId: string, dto: IUpdateRoleDto): Promise<Role> {
+  public async updateRole(id: string, project_id: string, dto: IUpdateRoleDto): Promise<Role> {
     const role = await this.getRoleById(id);
 
-    if (role.project_id !== projectId) {
+    if (role.project_id !== project_id) {
       throw new RoleNotFoundError(`Role not found in this project`);
     }
 
@@ -159,7 +149,7 @@ export class RoleService {
 
     if (dto.name && dto.name !== role.name) {
       const existing = await this.roleRepo.findOne({
-        where: { project_id: projectId, name: dto.name },
+        where: { project_id, name: dto.name },
       });
       if (existing && existing.id !== id) {
         throw new DuplicateRoleError(`Role "${dto.name}" already exists in this project`);
@@ -173,17 +163,17 @@ export class RoleService {
 
     await this.roleRepo.save(role);
 
-    if (dto.permissionKeys !== undefined) {
-      await this.assignPermissions(id, dto.permissionKeys);
+    if (dto.permission_keys !== undefined) {
+      await this.assignPermissions(id, dto.permission_keys);
     }
 
     return this.getRoleById(id);
   }
 
-  public async deleteRole(id: string, projectId: string): Promise<void> {
+  public async deleteRole(id: string, project_id: string): Promise<void> {
     const role = await this.getRoleById(id);
 
-    if (role.project_id !== projectId) {
+    if (role.project_id !== project_id) {
       throw new RoleNotFoundError(`Role not found in this project`);
     }
 
@@ -194,8 +184,8 @@ export class RoleService {
     await this.roleRepo.remove(role);
   }
 
-  public async getUserPermissions(projectId: string, roleName: string): Promise<string[]> {
-    const role = await this.getRoleByName(projectId, roleName);
+  public async getUserPermissions(project_id: string, roleName: string): Promise<string[]> {
+    const role = await this.getRoleByName(project_id, roleName);
     if (!role) return [];
 
     return (role.rolePermissions || [])

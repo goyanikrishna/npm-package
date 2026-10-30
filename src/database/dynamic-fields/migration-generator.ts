@@ -12,7 +12,7 @@ export interface IMigrationGenerateResult {
 export const mapTypeToPostgres = (field: IUserFieldConfig): string => {
   switch (field.type) {
     case 'string':
-      return `VARCHAR(${field.maxLength || 255})`;
+      return `VARCHAR(${field.max_length || 255})`;
     case 'text':
       return 'TEXT';
     case 'integer':

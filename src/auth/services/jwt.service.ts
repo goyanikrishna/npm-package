@@ -7,16 +7,16 @@ import { InvalidTokenError, TokenExpiredError } from '../../errors/auth.errors';
 export class JwtService {
   public signAccessToken(payload: IJwtPayload): string {
     const authConfig = configManager.getAuth();
-    const { accessTokenSecret, accessTokenExpiry = '15m', issuer, audience } = authConfig.jwt;
+    const { access_token_secret, access_token_expiry = '15m', issuer, audience } = authConfig.jwt;
 
     const options: SignOptions = {
-      expiresIn: accessTokenExpiry as SignOptions['expiresIn'],
+      expiresIn: access_token_expiry as SignOptions['expiresIn'],
     };
 
     if (issuer) options.issuer = issuer;
     if (audience) options.audience = audience;
 
-    return jwt.sign(payload, accessTokenSecret, options);
+    return jwt.sign(payload, access_token_secret, options);
   }
 
   public verifyAccessToken(token: string): IJwtPayload {
@@ -25,10 +25,10 @@ export class JwtService {
     }
 
     const authConfig = configManager.getAuth();
-    const { accessTokenSecret, issuer, audience } = authConfig.jwt;
+    const { access_token_secret, issuer, audience } = authConfig.jwt;
 
     try {
-      const decoded = jwt.verify(token, accessTokenSecret, {
+      const decoded = jwt.verify(token, access_token_secret, {
         issuer,
         audience,
       }) as IJwtPayload;

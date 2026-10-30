@@ -21,8 +21,8 @@ describe('Config System', () => {
     },
     auth: {
       jwt: {
-        accessTokenSecret: 'super-secret-access-token-key-12345',
-        refreshTokenSecret: 'super-secret-refresh-token-key-12345',
+        access_token_secret: 'super-secret-access-token-key-12345',
+        refresh_token_secret: 'super-secret-refresh-token-key-12345',
       },
     },
     superAdmin: {
@@ -37,12 +37,12 @@ describe('Config System', () => {
     const validated = validateConfig(validMinimalConfig);
 
     expect(validated.project.name).toBe('Acme Health');
-    expect(validated.auth.jwt.accessTokenExpiry).toBe('15m');
-    expect(validated.auth.jwt.refreshTokenExpiry).toBe('7d');
-    expect(validated.auth.password?.minLength).toBe(8);
-    expect(validated.auth.password?.requireUppercase).toBe(true);
+    expect(validated.auth.jwt.access_token_expiry).toBe('15m');
+    expect(validated.auth.jwt.refresh_token_expiry).toBe('7d');
+    expect(validated.auth.password?.min_length).toBe(8);
+    expect(validated.auth.password?.require_uppercase).toBe(true);
     expect(validated.auth.registration?.defaultRole).toBe('user');
-    expect(validated.auth.registration?.defaultStatus).toBe('active');
+    expect(validated.auth.registration?.default_status).toBe('active');
   });
 
   it('should initialize ConfigManager singleton and retrieve subsections', () => {
@@ -51,8 +51,8 @@ describe('Config System', () => {
     expect(configManager.isInitialized()).toBe(true);
     expect(configManager.getProject().name).toBe('Acme Health');
     expect(configManager.getSuperAdmin().email).toBe('admin@acme.com');
-    expect(configManager.getBranding().primaryColor).toBe('#4F46E5');
-    expect(configManager.getBranding().projectName).toBe('Acme Health');
+    expect(configManager.getBranding().primary_color).toBe('#4F46E5');
+    expect(configManager.getBranding().project_name).toBe('Acme Health');
   });
 
   it('should throw ConfigurationError if accessing config before initialization', () => {
@@ -89,9 +89,9 @@ describe('Config System', () => {
       ...validMinimalConfig,
       users: {
         fields: [
-          { name: 'license_number', type: 'string', maxLength: 50, required: true },
+          { name: 'license_number', type: 'string', max_length: 50, required: true },
           { name: 'years_experience', type: 'integer', nullable: true },
-          { name: 'specialty', type: 'enum', enumValues: ['cardiology', 'neurology'] },
+          { name: 'specialty', type: 'enum', enum_values: ['cardiology', 'neurology'] },
         ],
       },
     };
@@ -105,7 +105,7 @@ describe('Config System', () => {
       ...validMinimalConfig,
       users: {
         fields: [
-          { name: 'specialty', type: 'enum' }, // missing enumValues
+          { name: 'specialty', type: 'enum' }, // missing enum_values
         ],
       },
     };

@@ -11,7 +11,7 @@ declare global {
   namespace Express {
     interface Request {
       user?: User;
-      userId?: string;
+      user_id?: string;
     }
   }
 }
@@ -22,6 +22,10 @@ export const authorizeMiddleware = async (
   next: NextFunction,
 ): Promise<void> => {
   try {
+    if (req.user) {
+      return next();
+    }
+
     const authHeader = req.headers.authorization;
     if (!authHeader || !authHeader.startsWith('Bearer ')) {
       throw new AuthException('Authentication token required');
@@ -31,7 +35,7 @@ export const authorizeMiddleware = async (
     const payload = jwtService.verifyAccessToken(token);
 
     // Cross-project security isolation (R03 & D05)
-    if (req.projectId && payload.project_id !== req.projectId) {
+    if (req.project_id && payload.project_id !== req.project_id) {
       throw new ProjectMismatchError('Token belongs to a different project context');
     }
 
@@ -42,11 +46,11 @@ export const authorizeMiddleware = async (
     }
 
     req.user = user;
-    req.userId = user.id;
+    req.user_id = user.id;
 
-    // Ensure req.projectId is set from token if not already
-    if (!req.projectId) {
-      req.projectId = user.project_id;
+    // Ensure req.project_id is set from token if not already
+    if (!req.project_id) {
+      req.project_id = user.project_id;
     }
 
     next();
@@ -54,3 +58,6 @@ export const authorizeMiddleware = async (
     next(err);
   }
 };
+
+export const authorize = authorizeMiddleware;
+export default authorizeMiddleware;

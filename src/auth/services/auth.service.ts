@@ -2,6 +2,7 @@
 import {
   IAuthTokens,
   IChangePasswordDto,
+  IClientMetadata,
   ILoginDto,
   ILoginResponse,
   IRegisterDto,
@@ -24,24 +25,24 @@ import {
 } from '../../errors';
 import { SuperAdminProtectedError } from '../../errors/user.errors';
 
-export interface IClientMetadata {
-  ipAddress?: string;
-  userAgent?: string;
-}
+export { IClientMetadata };
 
 export class AuthService {
   public async register(
-    projectId: string,
+    project_id: string,
     dto: IRegisterDto,
     clientMeta?: IClientMetadata,
   ): Promise<ILoginResponse> {
     passwordService.validatePolicy(dto.password);
 
-    const safeUser = await userService.createUser(projectId, {
+    const first_name = (dto.first_name || '').trim();
+    const last_name = (dto.last_name || '').trim();
+
+    const safeUser = await userService.createUser(project_id, {
       email: dto.email,
       password: dto.password,
-      firstName: dto.firstName,
-      lastName: dto.lastName,
+      first_name,
+      last_name,
       phone: dto.phone,
       language: dto.language,
       profile: dto.profile,
@@ -49,7 +50,7 @@ export class AuthService {
 
     const tokens = await this.generateTokenPair(
       safeUser.id!,
-      projectId,
+      project_id,
       safeUser.email!,
       safeUser.role || 'user',
       clientMeta,
@@ -58,7 +59,7 @@ export class AuthService {
     // Send welcome email asynchronously
     emailService
       .sendWelcomeEmail(safeUser.email!, {
-        firstName: safeUser.first_name || '',
+        first_name: safeUser.first_name || '',
       })
       .catch(() => {});
 
@@ -69,11 +70,11 @@ export class AuthService {
   }
 
   public async login(
-    projectId: string,
+    project_id: string,
     dto: ILoginDto,
     clientMeta?: IClientMetadata,
   ): Promise<ILoginResponse> {
-    const user = await userService.getUserByEmail(projectId, dto.email, true);
+    const user = await userService.getUserByEmail(project_id, dto.email, true);
 
     if (!user) {
       throw new InvalidCredentialsError();
@@ -90,7 +91,7 @@ export class AuthService {
 
     const tokens = await this.generateTokenPair(
       user.id,
-      projectId,
+      project_id,
       user.email,
       user.role,
       clientMeta,
@@ -105,34 +106,34 @@ export class AuthService {
   public async refreshToken(
     refreshToken: string,
     clientMeta?: IClientMetadata,
-    projectId?: string,
+    project_id?: string,
   ): Promise<IAuthTokens> {
-    const session = await sessionService.findValidSession(refreshToken, projectId);
+    const session = await sessionService.findValidSession(refreshToken, project_id);
     const user = await userService.getUserById(session.user_id, session.project_id);
 
     if (user.status !== 'active') {
-      await sessionService.revokeSession(refreshToken, projectId);
+      await sessionService.revokeSession(refreshToken, project_id);
       throw new UserInactiveError('User account is inactive');
     }
 
     // Revoke old session token (Token Rotation - Decision D04)
-    await sessionService.revokeSession(refreshToken, projectId);
+    await sessionService.revokeSession(refreshToken, project_id);
 
     // Issue new token pair
     return this.generateTokenPair(user.id, session.project_id, user.email, user.role, clientMeta);
   }
 
   public async forgotPassword(
-    projectId: string,
+    project_id: string,
     email: string,
   ): Promise<{ token: string; email: string }> {
-    const user = await userService.getUserByEmail(projectId, email);
+    const user = await userService.getUserByEmail(project_id, email);
     if (!user) {
       // For security, don't reveal email existence; return success-like object
       return { token: '', email };
     }
 
-    const resetToken = await tokenService.createPasswordResetToken(projectId, email);
+    const resetToken = await tokenService.createPasswordResetToken(project_id, email);
 
     // Send password reset email asynchronously
     emailService
@@ -144,17 +145,15 @@ export class AuthService {
     return { token: resetToken.token, email };
   }
 
-  public async resetPassword(dto: IResetPasswordDto): Promise<void> {
-    const resetRecord = await tokenService.verifyPasswordResetToken(dto.token);
-    passwordService.validatePolicy(dto.newPassword);
+  public async resetPassword(dto: IResetPasswordDto, project_id?: string): Promise<void> {
+    const resetRecord = await tokenService.verifyPasswordResetToken(dto.token, project_id);
 
     const user = await userService.getUserByEmail(resetRecord.project_id, resetRecord.email, true);
     if (!user) {
       throw new UserNotFoundError('User associated with reset token not found');
     }
 
-    const newHashed = await passwordService.hashPassword(dto.newPassword);
-    user.password = newHashed;
+    user.password = await passwordService.validateAndHash(dto.new_password);
     await getDataSource().getRepository(User).save(user);
 
     // Mark reset token used
@@ -168,50 +167,46 @@ export class AuthService {
   }
 
   public async changePassword(
-    userId: string,
-    projectId: string,
+    user_id: string,
+    project_id: string,
     dto: IChangePasswordDto,
   ): Promise<void> {
-    const user = await userService.getUserById(userId, projectId);
-    const userWithPassword = await userService.getUserByEmail(projectId, user.email, true);
+    const user = await userService.getUserById(user_id, project_id);
+    const userWithPassword = await userService.getUserByEmail(project_id, user.email, true);
 
     if (!userWithPassword) {
       throw new UserNotFoundError();
     }
 
-    const currentPassword = dto.currentPassword || (dto as any).oldPassword;
-    const isMatch = await userWithPassword.checkIfPasswordMatch(currentPassword);
+    const isMatch = await userWithPassword.checkIfPasswordMatch(dto.current_password);
     if (!isMatch) {
       throw new NotMatchException('Current password does not match');
     }
 
-    passwordService.validatePolicy(dto.newPassword);
-    const newHashed = await passwordService.hashPassword(dto.newPassword);
-    userWithPassword.password = newHashed;
-
+    userWithPassword.password = await passwordService.validateAndHash(dto.new_password);
     await getDataSource().getRepository(User).save(userWithPassword);
 
     // Revoke other user sessions
-    await sessionService.revokeAllUserSessions(userId);
+    await sessionService.revokeAllUserSessions(user_id);
 
     // Send alert email
     emailService.sendPasswordChangedEmail(user.email).catch(() => {});
   }
 
-  public async logout(refreshToken: string): Promise<void> {
+  public async logout(refreshToken: string, project_id?: string): Promise<void> {
     if (refreshToken) {
-      await sessionService.revokeSession(refreshToken);
+      await sessionService.revokeSession(refreshToken, project_id);
     }
   }
 
   public async deleteAccount(
-    userId: string,
-    projectId: string,
+    user_id: string,
+    project_id: string,
     passwordConfirmation: string,
   ): Promise<void> {
     const user = await userService.getUserByEmail(
-      projectId,
-      (await userService.getUserById(userId, projectId)).email,
+      project_id,
+      (await userService.getUserById(user_id, project_id)).email,
       true,
     );
 
@@ -229,40 +224,40 @@ export class AuthService {
     }
 
     const userEmail = user.email;
-    await userService.deleteUser(userId, projectId, userId);
-    await sessionService.revokeAllUserSessions(userId);
+    await userService.deleteUser(user_id, project_id, user_id);
+    await sessionService.revokeAllUserSessions(user_id);
 
     // Send farewell email
     emailService.sendAccountDeletedEmail(userEmail).catch(() => {});
   }
 
   private async generateTokenPair(
-    userId: string,
-    projectId: string,
+    user_id: string,
+    project_id: string,
     email: string,
     role: string,
     clientMeta?: IClientMetadata,
   ): Promise<IAuthTokens> {
     const authConfig = configManager.getAuth();
     const accessToken = jwtService.signAccessToken({
-      id: userId,
-      project_id: projectId,
+      id: user_id,
+      project_id,
       email,
       role,
     });
 
     const session = await sessionService.createSession({
-      userId,
-      projectId,
-      ipAddress: clientMeta?.ipAddress,
-      userAgent: clientMeta?.userAgent,
+      user_id,
+      project_id,
+      ip_address: clientMeta?.ip_address,
+      user_agent: clientMeta?.user_agent,
     });
 
     return {
       access_token: accessToken,
       refresh_token: session.refresh_token,
       token_type: 'Bearer',
-      expires_in: authConfig.jwt.accessTokenExpiry || '15m',
+      expires_in: authConfig.jwt.access_token_expiry || '15m',
     };
   }
 }

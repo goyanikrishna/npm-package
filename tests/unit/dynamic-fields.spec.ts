@@ -9,7 +9,7 @@ import { DynamicFieldValidationError } from '../../src/errors/config.errors';
 
 describe('Dynamic Fields System', () => {
   const fieldsConfig: IUserFieldConfig[] = [
-    { name: 'department', type: 'string', maxLength: 50, required: true },
+    { name: 'department', type: 'string', max_length: 50, required: true },
     { name: 'bio', type: 'text', nullable: true },
     { name: 'years_active', type: 'integer', nullable: true },
     { name: 'rating', type: 'decimal', nullable: true },
@@ -17,7 +17,7 @@ describe('Dynamic Fields System', () => {
     { name: 'dob', type: 'date', nullable: true },
     { name: 'last_login_at', type: 'datetime', nullable: true },
     { name: 'external_id', type: 'uuid', nullable: true, unique: true },
-    { name: 'tier', type: 'enum', enumValues: ['free', 'premium', 'enterprise'], indexed: true },
+    { name: 'tier', type: 'enum', enum_values: ['free', 'premium', 'enterprise'], indexed: true },
   ];
 
   describe('Dynamic Field Validator', () => {
@@ -61,7 +61,7 @@ describe('Dynamic Fields System', () => {
       expect(() => validateDynamicFields(input, fieldsConfig)).toThrow(DynamicFieldValidationError);
     });
 
-    it('should throw DynamicFieldValidationError if string exceeds maxLength', () => {
+    it('should throw DynamicFieldValidationError if string exceeds max_length', () => {
       const input = {
         department: 'A'.repeat(51), // limit is 50
       };
@@ -87,11 +87,28 @@ describe('Dynamic Fields System', () => {
       expect(result.bio).toBe('Updated bio only');
       expect(result.department).toBeUndefined();
     });
+
+    it('should apply configured field.default when field is undefined during full validation', () => {
+      const fieldsWithDefaults: IUserFieldConfig[] = [
+        { name: 'role_level', type: 'integer', default: 1 },
+        { name: 'status_flag', type: 'boolean', default: true },
+        { name: 'department', type: 'string', required: true },
+      ];
+
+      const input = {
+        department: 'Operations',
+      };
+
+      const result = validateDynamicFields(input, fieldsWithDefaults, false);
+      expect(result.department).toBe('Operations');
+      expect(result.role_level).toBe(1);
+      expect(result.status_flag).toBe(true);
+    });
   });
 
   describe('Migration Generator', () => {
     it('should map field types to PostgreSQL DDL types correctly', () => {
-      expect(mapTypeToPostgres({ name: 'f1', type: 'string', maxLength: 100 })).toBe(
+      expect(mapTypeToPostgres({ name: 'f1', type: 'string', max_length: 100 })).toBe(
         'VARCHAR(100)',
       );
       expect(mapTypeToPostgres({ name: 'f2', type: 'text' })).toBe('TEXT');

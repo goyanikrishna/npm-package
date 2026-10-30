@@ -2,6 +2,7 @@
 import { NextFunction, Request, Response } from 'express';
 import { Schema } from 'joi';
 import { BadRequestException } from '../errors/base.error';
+import { ErrMessages } from '../constants/app-message.constant';
 
 export interface IValidationSchema {
   body?: Schema;
@@ -16,11 +17,10 @@ export const validate = (schema: IValidationSchema) => {
       if (schema.body && req.body) {
         const { error, value } = schema.body.validate(req.body, {
           abortEarly: false,
-          stripUnknown: true,
         });
         if (error) {
           throw new BadRequestException(
-            'Validation failed',
+            ErrMessages.VALIDATION_FAILED,
             error.details.map((d) => d.message),
           );
         }
@@ -34,7 +34,7 @@ export const validate = (schema: IValidationSchema) => {
         });
         if (error) {
           throw new BadRequestException(
-            'URL parameters validation failed',
+            ErrMessages.PARAMS_VALIDATION_FAILED,
             error.details.map((d) => d.message),
           );
         }
@@ -48,7 +48,7 @@ export const validate = (schema: IValidationSchema) => {
         });
         if (error) {
           throw new BadRequestException(
-            'Query parameters validation failed',
+            ErrMessages.QUERY_VALIDATION_FAILED,
             error.details.map((d) => d.message),
           );
         }

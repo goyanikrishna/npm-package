@@ -81,8 +81,8 @@ const userFieldSchema = Joi.object<IUserFieldConfig>({
   unique: Joi.boolean().default(false),
   indexed: Joi.boolean().default(false),
   default: Joi.any().optional(),
-  maxLength: Joi.number().integer().positive().optional(),
-  enumValues: Joi.when('type', {
+  max_length: Joi.number().integer().positive().optional(),
+  enum_values: Joi.when('type', {
     is: 'enum',
     then: Joi.array().items(Joi.string()).min(1).required(),
     otherwise: Joi.array().items(Joi.string()).optional(),
@@ -112,25 +112,25 @@ export const backendConfigSchema = Joi.object<IBackendConfig>({
 
   auth: Joi.object({
     jwt: Joi.object({
-      accessTokenSecret: Joi.string().min(16).required(),
-      refreshTokenSecret: Joi.string().min(16).required(),
-      accessTokenExpiry: Joi.alternatives().try(Joi.string(), Joi.number()).default('15m'),
-      refreshTokenExpiry: Joi.alternatives().try(Joi.string(), Joi.number()).default('7d'),
+      access_token_secret: Joi.string().min(16).required(),
+      refresh_token_secret: Joi.string().min(16).required(),
+      access_token_expiry: Joi.alternatives().try(Joi.string(), Joi.number()).default('15m'),
+      refresh_token_expiry: Joi.alternatives().try(Joi.string(), Joi.number()).default('7d'),
       issuer: Joi.string().optional(),
       audience: Joi.string().optional(),
     }).required(),
     password: Joi.object({
-      minLength: Joi.number().integer().min(6).default(8),
-      maxLength: Joi.number().integer().min(10).default(128),
-      requireUppercase: Joi.boolean().default(true),
-      requireLowercase: Joi.boolean().default(true),
-      requireDigit: Joi.boolean().default(true),
-      requireSpecialChar: Joi.boolean().default(false),
-      saltRounds: Joi.number().integer().min(8).max(16).default(12),
+      min_length: Joi.number().integer().min(6).default(8),
+      max_length: Joi.number().integer().min(10).default(128),
+      require_uppercase: Joi.boolean().default(true),
+      require_lowercase: Joi.boolean().default(true),
+      require_digit: Joi.boolean().default(true),
+      require_special_char: Joi.boolean().default(false),
+      salt_rounds: Joi.number().integer().min(8).max(16).default(12),
     }).default(),
     registration: Joi.object({
       defaultRole: Joi.string().default('user'),
-      defaultStatus: Joi.string().default('active'),
+      default_status: Joi.string().default('active'),
       requireEmailVerification: Joi.boolean().default(false),
       allowedRoles: Joi.array().items(Joi.string()).optional(),
     }).default(),
@@ -139,7 +139,7 @@ export const backendConfigSchema = Joi.object<IBackendConfig>({
   users: Joi.object({
     fields: Joi.array().items(userFieldSchema).default([]),
     statuses: Joi.array().items(Joi.string()).default(['active', 'inactive', 'suspended']),
-    defaultStatus: Joi.string().default('active'),
+    default_status: Joi.string().default('active'),
   }).default(),
 
   roles: Joi.array()
@@ -147,7 +147,7 @@ export const backendConfigSchema = Joi.object<IBackendConfig>({
       Joi.object({
         name: Joi.string().required(),
         description: Joi.string().optional(),
-        isSystem: Joi.boolean().default(false),
+        is_system: Joi.boolean().default(false),
         permissions: Joi.array().items(Joi.string()).required(),
       }),
     )
@@ -155,8 +155,8 @@ export const backendConfigSchema = Joi.object<IBackendConfig>({
 
   superAdmin: Joi.object({
     email: Joi.string().email().required(),
-    firstName: Joi.string().trim().min(1).max(100).required(),
-    lastName: Joi.string().trim().min(1).max(100).required(),
+    first_name: Joi.string().trim().min(1).max(100).optional(),
+    last_name: Joi.string().trim().min(1).max(100).optional(),
     password: Joi.string().min(8).required(),
     phone: Joi.string().optional(),
   }).required(),
@@ -164,7 +164,7 @@ export const backendConfigSchema = Joi.object<IBackendConfig>({
   email: Joi.object({
     provider: Joi.string().valid('smtp', 'resend').required(),
     from: Joi.string().email().required(),
-    fromName: Joi.string().optional(),
+    from_name: Joi.string().optional(),
     smtp: Joi.when('provider', {
       is: 'smtp',
       then: Joi.object({
@@ -185,16 +185,16 @@ export const backendConfigSchema = Joi.object<IBackendConfig>({
       }).required(),
       otherwise: Joi.forbidden(),
     }),
-    templatesDir: Joi.string().optional(),
+    templates_dir: Joi.string().optional(),
   }).optional(),
 
   branding: Joi.object({
-    projectName: Joi.string().optional(),
-    companyName: Joi.string().optional(),
-    logoUrl: Joi.string().uri().optional(),
-    primaryColor: Joi.string().optional(),
-    supportEmail: Joi.string().email().optional(),
-    frontendUrl: Joi.string().uri().optional(),
+    project_name: Joi.string().optional(),
+    company_name: Joi.string().optional(),
+    logo_url: Joi.string().uri().optional(),
+    primary_color: Joi.string().optional(),
+    support_email: Joi.string().email().optional(),
+    frontend_url: Joi.string().uri().optional(),
   }).optional(),
 
   storage: Joi.object({
@@ -206,11 +206,11 @@ export const backendConfigSchema = Joi.object<IBackendConfig>({
       then: Joi.string().required(),
       otherwise: Joi.forbidden(),
     }),
-    accessKeyId: Joi.string().required(),
-    secretAccessKey: Joi.string().required(),
+    access_key_id: Joi.string().required(),
+    secret_access_key: Joi.string().required(),
     endpoint: Joi.string().optional(),
-    publicUrl: Joi.string().optional(),
-    signedUrlExpirySeconds: Joi.number().integer().positive().default(3600),
+    public_url: Joi.string().optional(),
+    signed_url_expiry_seconds: Joi.number().integer().positive().default(3600),
   }).optional(),
 });
 

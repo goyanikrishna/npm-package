@@ -10,19 +10,9 @@ import {
   IPaginationQuery,
   IPaginatedResult,
 } from '../../utils/pagination.util';
+import { ICreateProjectDto, IUpdateProjectDto } from '../types';
 
-export interface ICreateProjectDto {
-  name: string;
-  slug?: string;
-  description?: string;
-  status?: string;
-}
-
-export interface IUpdateProjectDto {
-  name?: string;
-  description?: string;
-  status?: string;
-}
+export { ICreateProjectDto, IUpdateProjectDto };
 
 export class ProjectService {
   private get repo(): Repository<Project> {

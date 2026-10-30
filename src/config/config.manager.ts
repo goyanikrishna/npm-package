@@ -63,7 +63,7 @@ class ConfigManager {
       this.get().users || {
         fields: [],
         statuses: ['active', 'inactive', 'suspended'],
-        defaultStatus: 'active',
+        default_status: 'active',
       }
     );
   }
@@ -83,12 +83,12 @@ class ConfigManager {
   public getBranding(): IBrandingConfig {
     const branding = this.get().branding || {};
     return {
-      projectName: branding.projectName || this.get().project.name,
-      companyName: branding.companyName || branding.projectName || this.get().project.name,
-      logoUrl: branding.logoUrl,
-      primaryColor: branding.primaryColor || '#4F46E5',
-      supportEmail: branding.supportEmail || 'support@example.com',
-      frontendUrl: branding.frontendUrl,
+      project_name: branding.project_name || this.get().project.name,
+      company_name: branding.company_name || branding.project_name || this.get().project.name,
+      logo_url: branding.logo_url,
+      primary_color: branding.primary_color || '#4F46E5',
+      support_email: branding.support_email || 'support@example.com',
+      frontend_url: branding.frontend_url,
     };
   }
 

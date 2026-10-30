@@ -5,9 +5,9 @@ import { IPasswordPolicyConfig } from '../../config/types';
 import { BadRequestException } from '../../errors/base.error';
 
 export class PasswordService {
-  public async hashPassword(password: string, saltRounds?: number): Promise<string> {
+  public async hashPassword(password: string, salt_rounds?: number): Promise<string> {
     const authConfig = configManager.getAuth();
-    const rounds = saltRounds || authConfig.password?.saltRounds || 12;
+    const rounds = salt_rounds || authConfig.password?.salt_rounds || 12;
     const salt = await bcrypt.genSalt(rounds);
     return bcrypt.hash(password, salt);
   }
@@ -20,12 +20,12 @@ export class PasswordService {
   public validatePolicy(password: string, customPolicy?: IPasswordPolicyConfig): void {
     const authConfig = configManager.getAuth();
     const policy = {
-      minLength: 8,
-      maxLength: 128,
-      requireUppercase: true,
-      requireLowercase: true,
-      requireDigit: true,
-      requireSpecialChar: false,
+      min_length: 8,
+      max_length: 128,
+      require_uppercase: true,
+      require_lowercase: true,
+      require_digit: true,
+      require_special_char: false,
       ...authConfig.password,
       ...customPolicy,
     };
@@ -34,31 +34,39 @@ export class PasswordService {
       throw new BadRequestException('Password is required');
     }
 
-    if (password.length < policy.minLength) {
+    if (password.length < policy.min_length) {
       throw new BadRequestException(
-        `Password must be at least ${policy.minLength} characters long`,
+        `Password must be at least ${policy.min_length} characters long`,
       );
     }
 
-    if (password.length > policy.maxLength) {
-      throw new BadRequestException(`Password cannot exceed ${policy.maxLength} characters`);
+    if (password.length > policy.max_length) {
+      throw new BadRequestException(`Password cannot exceed ${policy.max_length} characters`);
     }
 
-    if (policy.requireUppercase && !/[A-Z]/.test(password)) {
+    if (policy.require_uppercase && !/[A-Z]/.test(password)) {
       throw new BadRequestException('Password must contain at least one uppercase letter');
     }
 
-    if (policy.requireLowercase && !/[a-z]/.test(password)) {
+    if (policy.require_lowercase && !/[a-z]/.test(password)) {
       throw new BadRequestException('Password must contain at least one lowercase letter');
     }
 
-    if (policy.requireDigit && !/[0-9]/.test(password)) {
+    if (policy.require_digit && !/[0-9]/.test(password)) {
       throw new BadRequestException('Password must contain at least one digit');
     }
 
-    if (policy.requireSpecialChar && !/[!@#$%^&*()_+\-=[\]{};':"\\|,.<>/?]/.test(password)) {
+    if (policy.require_special_char && !/[!@#$%^&*()_+\-=[\]{};':"\\|,.<>/?]/.test(password)) {
       throw new BadRequestException('Password must contain at least one special character');
     }
+  }
+
+  public async validateAndHash(
+    password: string,
+    customPolicy?: IPasswordPolicyConfig,
+  ): Promise<string> {
+    this.validatePolicy(password, customPolicy);
+    return this.hashPassword(password);
   }
 }
 

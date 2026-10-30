@@ -1,5 +1,5 @@
 // Auth Types Definitions
-import { User } from '../user/entities/user.entity';
+import type { User } from '../user/entities/user.entity';
 
 export interface IJwtPayload {
   id: string;
@@ -21,31 +21,43 @@ export interface ILoginResponse {
   tokens: IAuthTokens;
 }
 
-export interface IRegisterDto {
+export interface IRegisterPayload {
   email: string;
   password: string;
-  firstName: string;
-  lastName: string;
+  first_name: string;
+  last_name: string;
   phone?: string;
   language?: string;
   profile?: Record<string, unknown>;
 }
 
-export interface ILoginDto {
+export interface ILoginPayload {
   email: string;
   password: string;
 }
 
-export interface IForgotPasswordDto {
+export interface IForgotPasswordPayload {
   email: string;
 }
 
-export interface IResetPasswordDto {
+export interface IResetPasswordPayload {
   token: string;
-  newPassword: string;
+  new_password: string;
 }
 
-export interface IChangePasswordDto {
-  currentPassword: string;
-  newPassword: string;
+export interface IChangePasswordPayload {
+  current_password: string;
+  new_password: string;
 }
+
+export interface IClientMetadata {
+  ip_address?: string;
+  user_agent?: string;
+}
+
+// Backward-compatibility aliases (aligning with docs2 conventions)
+export type IRegisterDto = IRegisterPayload;
+export type ILoginDto = ILoginPayload;
+export type IForgotPasswordDto = IForgotPasswordPayload;
+export type IResetPasswordDto = IResetPasswordPayload;
+export type IChangePasswordDto = IChangePasswordPayload;

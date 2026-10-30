@@ -11,8 +11,8 @@ describe('Email & Template System', () => {
       database: { host: 'localhost', port: 5432, username: 'pg', database: 'db' },
       auth: {
         jwt: {
-          accessTokenSecret: 'super-secret-access-token-key-12345',
-          refreshTokenSecret: 'super-secret-refresh-token-key-12345',
+          access_token_secret: 'super-secret-access-token-key-12345',
+          refresh_token_secret: 'super-secret-refresh-token-key-12345',
         },
       },
       superAdmin: {
@@ -22,11 +22,11 @@ describe('Email & Template System', () => {
         password: 'Password123!',
       },
       branding: {
-        projectName: 'HealthPortal Pro',
-        companyName: 'HealthPortal Global LLC',
-        primaryColor: '#0ea5e9',
-        supportEmail: 'care@healthportal.com',
-        frontendUrl: 'https://app.healthportal.com',
+        project_name: 'HealthPortal Pro',
+        company_name: 'HealthPortal Global LLC',
+        primary_color: '#0ea5e9',
+        support_email: 'care@healthportal.com',
+        frontend_url: 'https://app.healthportal.com',
       },
       email: {
         provider: 'smtp',

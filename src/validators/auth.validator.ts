@@ -5,13 +5,13 @@ export const authParams = {
   register: {
     body: Joi.object({
       email: Joi.string().email().required(),
-      password: Joi.string().min(6).required(),
-      firstName: Joi.string().trim().min(1).max(100).required(),
-      lastName: Joi.string().trim().min(1).max(100).required(),
+      password: Joi.string().min(8).required(),
+      first_name: Joi.string().trim().min(1).max(100).required(),
+      last_name: Joi.string().trim().min(1).max(100).required(),
       phone: Joi.string().max(30).optional().allow(null, ''),
       language: Joi.string().max(10).optional().default('en'),
-      profile: Joi.object().optional(),
-    }),
+      profile: Joi.object().unknown(true).optional(),
+    }).unknown(true),
   },
 
   login: {
@@ -23,7 +23,7 @@ export const authParams = {
 
   refreshToken: {
     body: Joi.object({
-      refreshToken: Joi.string().required(),
+      refresh_token: Joi.string().required(),
     }),
   },
 
@@ -36,16 +36,15 @@ export const authParams = {
   resetPassword: {
     body: Joi.object({
       token: Joi.string().required(),
-      newPassword: Joi.string().min(6).required(),
+      new_password: Joi.string().min(8).required(),
     }),
   },
 
   changePassword: {
     body: Joi.object({
-      currentPassword: Joi.string().optional(),
-      oldPassword: Joi.string().optional(),
-      newPassword: Joi.string().min(6).required(),
-    }).or('currentPassword', 'oldPassword'),
+      current_password: Joi.string().required(),
+      new_password: Joi.string().min(8).required(),
+    }),
   },
 
   deleteAccount: {
@@ -54,14 +53,22 @@ export const authParams = {
     }),
   },
 
+  logout: {
+    body: Joi.object({
+      refresh_token: Joi.string().required(),
+    }),
+  },
+
   updateProfile: {
     body: Joi.object({
-      firstName: Joi.string().trim().min(1).max(100).optional(),
-      lastName: Joi.string().trim().min(1).max(100).optional(),
+      first_name: Joi.string().trim().min(1).max(100).optional(),
+      last_name: Joi.string().trim().min(1).max(100).optional(),
       phone: Joi.string().max(30).optional().allow(null, ''),
       avatar: Joi.string().optional().allow(null, ''),
       language: Joi.string().max(10).optional(),
-      profile: Joi.object().optional(),
-    }),
+      profile: Joi.object().unknown(true).optional(),
+    }).unknown(true),
   },
 };
+
+export default authParams;

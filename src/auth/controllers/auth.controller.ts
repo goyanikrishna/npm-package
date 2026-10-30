@@ -1,125 +1,99 @@
 // Auth Controller
-import { NextFunction, Request, Response } from 'express';
+import { Request, Response, RequestHandler } from 'express';
 import { authService } from '../services/auth.service';
 import { sendResponse } from '../../utils/response.util';
+import { asyncHandler } from '../../utils/async-handler.util';
+import { getClientMeta } from '../../utils/request.util';
+import { SuccessMessages } from '../../constants/app-message.constant';
 
-export const authController = {
-  async register(req: Request, res: Response, next: NextFunction): Promise<void> {
-    try {
-      const clientMeta = {
-        ipAddress: req.ip || req.socket.remoteAddress,
-        userAgent: req.headers['user-agent'],
-      };
+const register = asyncHandler(async (req: Request, res: Response): Promise<void> => {
+  const { body, project_id } = req;
+  const result = await authService.register(project_id!, body, getClientMeta(req));
+  sendResponse(res, result, SuccessMessages.REGISTER, 201);
+});
 
-      const result = await authService.register(req.projectId!, req.body, clientMeta);
-      sendResponse(res, result, 'Registration successful', 201);
-    } catch (err) {
-      next(err);
-    }
-  },
+const login = asyncHandler(async (req: Request, res: Response): Promise<void> => {
+  const { body, project_id } = req;
+  const result = await authService.login(project_id!, body, getClientMeta(req));
+  sendResponse(res, result, SuccessMessages.LOGIN, 200);
+});
 
-  async login(req: Request, res: Response, next: NextFunction): Promise<void> {
-    try {
-      const clientMeta = {
-        ipAddress: req.ip || req.socket.remoteAddress,
-        userAgent: req.headers['user-agent'],
-      };
+const refreshToken = asyncHandler(async (req: Request, res: Response): Promise<void> => {
+  const { body, project_id } = req;
+  const { refresh_token } = body;
+  const tokens = await authService.refreshToken(refresh_token, getClientMeta(req), project_id);
+  sendResponse(res, tokens, SuccessMessages.TOKEN_REFRESH, 200);
+});
 
-      const result = await authService.login(req.projectId!, req.body, clientMeta);
-      sendResponse(res, result, 'Login successful', 200);
-    } catch (err) {
-      next(err);
-    }
-  },
+const forgotPassword = asyncHandler(async (req: Request, res: Response): Promise<void> => {
+  const { body, project_id } = req;
+  const { email } = body;
+  await authService.forgotPassword(project_id!, email);
+  sendResponse(res, null, SuccessMessages.FORGOT_PASSWORD_SENT, 200);
+});
 
-  async refreshToken(req: Request, res: Response, next: NextFunction): Promise<void> {
-    try {
-      const clientMeta = {
-        ipAddress: req.ip || req.socket.remoteAddress,
-        userAgent: req.headers['user-agent'],
-      };
+const resetPassword = asyncHandler(async (req: Request, res: Response): Promise<void> => {
+  const { body, project_id } = req;
+  await authService.resetPassword(body, project_id);
+  sendResponse(res, null, SuccessMessages.PASSWORD_RESET, 200);
+});
 
-      const tokens = await authService.refreshToken(
-        req.body.refreshToken,
-        clientMeta,
-        req.projectId,
-      );
-      sendResponse(res, tokens, 'Token refreshed successfully', 200);
-    } catch (err) {
-      next(err);
-    }
-  },
+const getProfile = asyncHandler(async (req: Request, res: Response): Promise<void> => {
+  const { user, project_id } = req;
+  const { userService } = await import('../../user/services/user.service');
+  const profile = await userService.getProfile(user!.id, project_id!);
+  sendResponse(res, profile, SuccessMessages.PROFILE_RETRIEVED, 200);
+});
 
-  async forgotPassword(req: Request, res: Response, next: NextFunction): Promise<void> {
-    try {
-      await authService.forgotPassword(req.projectId!, req.body.email);
-      sendResponse(
-        res,
-        null,
-        'If an account exists with this email, a password reset link has been sent.',
-        200,
-      );
-    } catch (err) {
-      next(err);
-    }
-  },
+const updateProfile = asyncHandler(async (req: Request, res: Response): Promise<void> => {
+  const { body, user, project_id } = req;
+  const { userService } = await import('../../user/services/user.service');
+  const updated = await userService.updateProfile(user!.id, project_id!, body);
+  sendResponse(res, updated, SuccessMessages.PROFILE_UPDATED, 200);
+});
 
-  async resetPassword(req: Request, res: Response, next: NextFunction): Promise<void> {
-    try {
-      await authService.resetPassword(req.body);
-      sendResponse(res, null, 'Password has been reset successfully', 200);
-    } catch (err) {
-      next(err);
-    }
-  },
+const changePassword = asyncHandler(async (req: Request, res: Response): Promise<void> => {
+  const { body, user, project_id } = req;
+  await authService.changePassword(user!.id, project_id!, body);
+  sendResponse(res, null, SuccessMessages.PASSWORD_CHANGED, 200);
+});
 
-  async getProfile(req: Request, res: Response, next: NextFunction): Promise<void> {
-    try {
-      const profile = await (
-        await import('../../user/services/user.service')
-      ).userService.getProfile(req.user!.id, req.projectId!);
-      sendResponse(res, profile, 'Profile retrieved successfully', 200);
-    } catch (err) {
-      next(err);
-    }
-  },
+const logout = asyncHandler(async (req: Request, res: Response): Promise<void> => {
+  const { body, project_id } = req;
+  const { refresh_token } = body;
+  await authService.logout(refresh_token, project_id);
+  sendResponse(res, null, SuccessMessages.LOGOUT, 200);
+});
 
-  async updateProfile(req: Request, res: Response, next: NextFunction): Promise<void> {
-    try {
-      const updated = await (
-        await import('../../user/services/user.service')
-      ).userService.updateProfile(req.user!.id, req.projectId!, req.body);
-      sendResponse(res, updated, 'Profile updated successfully', 200);
-    } catch (err) {
-      next(err);
-    }
-  },
+const deleteAccount = asyncHandler(async (req: Request, res: Response): Promise<void> => {
+  const { body, user, project_id } = req;
+  const { password } = body;
+  await authService.deleteAccount(user!.id, project_id!, password);
+  sendResponse(res, null, SuccessMessages.ACCOUNT_DELETED, 200);
+});
 
-  async changePassword(req: Request, res: Response, next: NextFunction): Promise<void> {
-    try {
-      await authService.changePassword(req.user!.id, req.projectId!, req.body);
-      sendResponse(res, null, 'Password changed successfully', 200);
-    } catch (err) {
-      next(err);
-    }
-  },
+export interface IAuthController {
+  register: RequestHandler;
+  login: RequestHandler;
+  refreshToken: RequestHandler;
+  forgotPassword: RequestHandler;
+  resetPassword: RequestHandler;
+  getProfile: RequestHandler;
+  updateProfile: RequestHandler;
+  changePassword: RequestHandler;
+  logout: RequestHandler;
+  deleteAccount: RequestHandler;
+}
 
-  async logout(req: Request, res: Response, next: NextFunction): Promise<void> {
-    try {
-      const refreshToken = req.body?.refreshToken;
-      await authService.logout(refreshToken);
-      sendResponse(res, null, 'Logged out successfully', 200);
-    } catch (err) {
-      next(err);
-    }
-  },
-
-  async deleteAccount(req: Request, res: Response, next: NextFunction): Promise<void> {
-    try {
-      await authService.deleteAccount(req.user!.id, req.projectId!, req.body.password);
-      sendResponse(res, null, 'Account deleted successfully', 200);
-    } catch (err) {
-      next(err);
-    }
-  },
+export const authController: IAuthController = {
+  register,
+  login,
+  refreshToken,
+  forgotPassword,
+  resetPassword,
+  getProfile,
+  updateProfile,
+  changePassword,
+  logout,
+  deleteAccount,
 };

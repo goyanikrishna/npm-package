@@ -98,21 +98,21 @@ async function bootstrap() {
     },
     auth: {
       jwt: {
-        accessTokenSecret: process.env.JWT_ACCESS_SECRET!,
-        refreshTokenSecret: process.env.JWT_REFRESH_SECRET!,
-        accessTokenExpiresIn: '15m',
-        refreshTokenExpiresIn: '7d',
+        access_token_secret: process.env.JWT_ACCESS_SECRET!,
+        refresh_token_secret: process.env.JWT_REFRESH_SECRET!,
+        access_token_expiry: '15m',
+        refresh_token_expiry: '7d',
       },
       password: {
-        minLength: 8,
-        requireUppercase: true,
-        requireDigit: true,
+        min_length: 8,
+        require_uppercase: true,
+        require_digit: true,
       },
     },
     superAdmin: {
       email: 'admin@acme.com',
-      firstName: 'Super',
-      lastName: 'Admin',
+      first_name: 'Super',
+      last_name: 'Admin',
       password: process.env.SUPER_ADMIN_PASSWORD || 'AdminPassword123!',
     },
     users: {

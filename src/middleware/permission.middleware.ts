@@ -16,8 +16,8 @@ export const hasPermission = (...requiredPermissions: string[]) => {
         return next();
       }
 
-      const projectId = req.projectId || req.user.project_id;
-      const userPermissions = await roleService.getUserPermissions(projectId, req.user.role);
+      const project_id = req.project_id || req.user.project_id;
+      const userPermissions = await roleService.getUserPermissions(project_id, req.user.role);
 
       const hasAll = requiredPermissions.every((perm) => userPermissions.includes(perm));
 

@@ -12,7 +12,7 @@ import { UserProfile } from '../user/entities/user-profile.entity';
 import { slugify } from '../utils/slug.util';
 import { normalizeEmail } from '../utils/email-normalizer.util';
 import { passwordService } from '../auth/services/password.service';
-import { createBackendRouter } from '../adapters/express/routes';
+import { createBackendRouter } from '../routes';
 
 export interface IBootstrapResult {
   dataSource: DataSource;
@@ -52,8 +52,8 @@ export const initializeBackend = async (config: IBackendConfig): Promise<IBootst
     superAdminRole = await roleService.createRole(project.id, {
       name: 'super_admin',
       description: 'Full system administrator with unrestricted access',
-      isSystem: true,
-      permissionKeys: allPermissionKeys,
+      is_system: true,
+      permission_keys: allPermissionKeys,
     });
   } else {
     // Ensure all permissions are assigned to Super Admin role
@@ -69,8 +69,8 @@ export const initializeBackend = async (config: IBackendConfig): Promise<IBootst
       await roleService.createRole(project.id, {
         name: r.name,
         description: r.description,
-        isSystem: r.isSystem ?? false,
-        permissionKeys: r.permissions,
+        is_system: r.is_system ?? false,
+        permission_keys: r.permissions,
       });
     }
   }
@@ -90,8 +90,8 @@ export const initializeBackend = async (config: IBackendConfig): Promise<IBootst
       saUser = manager.create(User, {
         project_id: project.id,
         email: saEmail,
-        first_name: saConfig.firstName,
-        last_name: saConfig.lastName,
+        first_name: saConfig.first_name || 'Super',
+        last_name: saConfig.last_name || 'Admin',
         phone: saConfig.phone || null,
         password: hashedPassword,
         role: 'super_admin',

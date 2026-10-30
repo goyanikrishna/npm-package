@@ -1,9 +1,9 @@
 // Storage Provider Interface
 export interface IFileMetadata {
-  contentLength: number;
-  contentType: string;
+  content_length: number;
+  content_type: string;
   etag?: string;
-  lastModified?: Date;
+  last_modified?: Date;
 }
 
 export interface IStorageProvider {

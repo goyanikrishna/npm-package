@@ -6,6 +6,9 @@ export * from './bootstrap/bootstrap.service';
 // Configuration
 export * from './config';
 
+// Constants
+export * from './constants';
+
 // Database Core & Entities
 export * from './database';
 
@@ -39,8 +42,8 @@ export * from './errors';
 // Utilities
 export * from './utils';
 
-// Express Adapter
-export * from './adapters/express';
+// Routes (Module-wise Onyx architecture)
+export * from './routes';
 
 // Dynamic Fields Generator
 export * from './database/dynamic-fields/migration-generator';

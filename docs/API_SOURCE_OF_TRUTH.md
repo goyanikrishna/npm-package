@@ -66,8 +66,8 @@ All errors return the standard error envelope:
   |---|---|---|---|
   | `email` | string (email) | Yes | Valid email address |
   | `password` | string | Yes | Min 8 chars (configurable policy) |
-  | `firstName` | string | Yes | User first name (1-100 chars) |
-  | `lastName` | string | Yes | User last name (1-100 chars) |
+  | `first_name` | string | Yes | User first name (1-100 chars) |
+  | `last_name` | string | Yes | User last name (1-100 chars) |
   | `phone` | string | No | User phone number |
   | `language` | string | No | Preferred language code (default: 'en') |
   | `profile` | object | No | Key-value pairs for configured dynamic fields |
@@ -77,8 +77,8 @@ All errors return the standard error envelope:
   {
     "email": "doctor.smith@example.com",
     "password": "SecurePassword123!",
-    "firstName": "John",
-    "lastName": "Smith",
+    "first_name": "John",
+    "last_name": "Smith",
     "phone": "+1-555-0199",
     "profile": {
       "department": "Cardiology",
@@ -173,7 +173,7 @@ All errors return the standard error envelope:
 - **Request Body**:
   | Field | Type | Required | Description |
   |---|---|---|---|
-  | `refreshToken` | string | Yes | Current refresh token |
+  | `refresh_token` | string | Yes | Current refresh token |
 
 - **Success Response (`200 OK`)**:
   ```json
@@ -223,7 +223,7 @@ All errors return the standard error envelope:
   | Field | Type | Required | Description |
   |---|---|---|---|
   | `token` | string | Yes | Token received via email |
-  | `newPassword` | string | Yes | New password satisfying policy |
+  | `new_password` | string | Yes | New password satisfying policy |
 
 - **Success Response (`200 OK`)**:
   ```json
@@ -273,8 +273,8 @@ All errors return the standard error envelope:
 - **Request Body**:
   | Field | Type | Required | Description |
   |---|---|---|---|
-  | `firstName` | string | No | Updated first name |
-  | `lastName` | string | No | Updated last name |
+  | `first_name` | string | No | Updated first name |
+  | `last_name` | string | No | Updated last name |
   | `phone` | string | No | Updated phone |
   | `avatar` | string | No | Avatar URL |
   | `language` | string | No | Language code |
@@ -290,8 +290,8 @@ All errors return the standard error envelope:
 - **Request Body**:
   | Field | Type | Required | Description |
   |---|---|---|---|
-  | `currentPassword` | string | Yes | Existing password |
-  | `newPassword` | string | Yes | New password |
+  | `current_password` | string | Yes | Existing password |
+  | `new_password` | string | Yes | New password |
 
 ---
 
@@ -303,7 +303,7 @@ All errors return the standard error envelope:
 - **Request Body**:
   | Field | Type | Required | Description |
   |---|---|---|---|
-  | `refreshToken` | string | No | Specific refresh token to invalidate |
+  | `refresh_token` | string | No | Specific refresh token to invalidate |
 
 ---
 
@@ -358,9 +358,9 @@ All errors return the standard error envelope:
         "total": 142,
         "page": 1,
         "limit": 20,
-        "totalPages": 8,
-        "hasNext": true,
-        "hasPrev": false
+        "total_pages": 8,
+        "has_next": true,
+        "has_prev": false
       }
     }
   }
