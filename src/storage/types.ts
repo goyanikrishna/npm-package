@@ -9,4 +9,3 @@ export interface IFileValidationOptions {
   allowed_mime_types?: string[];
   max_size_bytes?: number; // default: 10MB
 }
-

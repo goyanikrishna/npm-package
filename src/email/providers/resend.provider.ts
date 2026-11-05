@@ -1,7 +1,7 @@
 // Resend Email Provider
-import { IEmailProvider, ISendEmailOptions } from './email-provider.interface';
 import { IResendConfig } from '../../config/types';
 import { EmailError } from '../../errors/email.errors';
+import { IEmailProvider, ISendEmailOptions } from './email-provider.interface';
 
 export class ResendProvider implements IEmailProvider {
   private apiKey: string;

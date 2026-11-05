@@ -1,11 +1,11 @@
 // Authorize Middleware for JWT validation and user context
-import { NextFunction, Request, Response } from 'express';
 import { jwtService } from '../auth/services/jwt.service';
-import { userService } from '../user/services/user.service';
 import { AuthException } from '../errors/auth.errors';
-import { UserInactiveError } from '../errors/user.errors';
 import { ProjectMismatchError } from '../errors/project.errors';
+import { UserInactiveError } from '../errors/user.errors';
 import { User } from '../user/entities/user.entity';
+import { userService } from '../user/services/user.service';
+import { NextFunction, Request, Response } from 'express';
 
 declare global {
   namespace Express {

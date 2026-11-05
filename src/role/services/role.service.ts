@@ -1,15 +1,15 @@
 // Role and Permission Service for node-backend-toolkit
-import { In, Repository } from 'typeorm';
-import { Role } from '../entities/role.entity';
-import { Permission } from '../entities/permission.entity';
-import { RolePermission } from '../entities/role-permission.entity';
 import { getDataSource } from '../../database/datasource';
 import {
   DuplicateRoleError,
   RoleNotFoundError,
   SystemRoleProtectedError,
 } from '../../errors/role.errors';
+import { Permission } from '../entities/permission.entity';
+import { RolePermission } from '../entities/role-permission.entity';
+import { Role } from '../entities/role.entity';
 import { ICreateRoleDto, IUpdateRoleDto } from '../types';
+import { In, Repository } from 'typeorm';
 
 export { ICreateRoleDto, IUpdateRoleDto };
 

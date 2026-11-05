@@ -1,4 +1,5 @@
 // UserProfile Entity for Dynamic Fields (Decision D01)
+import { User } from './user.entity';
 import {
   Column,
   CreateDateColumn,
@@ -9,7 +10,6 @@ import {
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
-import { User } from './user.entity';
 
 @Entity({ name: 'user_profiles' })
 export class UserProfile {

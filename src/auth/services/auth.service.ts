@@ -1,4 +1,17 @@
 // Auth Service orchestrating authentication flows
+import { configManager } from '../../config/config.manager';
+import { getDataSource } from '../../database/datasource';
+import { emailService } from '../../email/services/email.service';
+import {
+  InvalidCredentialsError,
+  NotMatchException,
+  UserInactiveError,
+  UserNotFoundError,
+} from '../../errors';
+import { SuperAdminProtectedError } from '../../errors/user.errors';
+import { sessionService } from '../../session/services/session.service';
+import { User } from '../../user/entities/user.entity';
+import { userService } from '../../user/services/user.service';
 import {
   IAuthTokens,
   IChangePasswordDto,
@@ -8,24 +21,9 @@ import {
   IRegisterDto,
   IResetPasswordDto,
 } from '../types';
-import { User } from '../../user/entities/user.entity';
-import { userService } from '../../user/services/user.service';
-import { passwordService } from './password.service';
 import { jwtService } from './jwt.service';
-import { sessionService } from '../../session/services/session.service';
+import { passwordService } from './password.service';
 import { tokenService } from './token.service';
-import { emailService } from '../../email/services/email.service';
-import { configManager } from '../../config/config.manager';
-import { getDataSource } from '../../database/datasource';
-import {
-  InvalidCredentialsError,
-  NotMatchException,
-  UserInactiveError,
-  UserNotFoundError,
-} from '../../errors';
-import { SuperAdminProtectedError } from '../../errors/user.errors';
-
-export { IClientMetadata };
 
 export class AuthService {
   public async register(
@@ -157,7 +155,7 @@ export class AuthService {
     await getDataSource().getRepository(User).save(user);
 
     // Mark reset token used
-    await tokenService.markTokenUsed(resetRecord.token);
+    await tokenService.markTokenUsed(resetRecord.id || resetRecord.token);
 
     // Revoke all existing sessions for security
     await sessionService.revokeAllUserSessions(user.id);

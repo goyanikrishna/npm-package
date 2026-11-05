@@ -1,4 +1,6 @@
 // Session Entity for Refresh Token Rotation & Invalidation (Decision D04)
+import { Project } from '../../project/entities/project.entity';
+import { User } from '../../user/entities/user.entity';
 import {
   Column,
   CreateDateColumn,
@@ -9,8 +11,6 @@ import {
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
-import { User } from '../../user/entities/user.entity';
-import { Project } from '../../project/entities/project.entity';
 
 @Entity({ name: 'sessions' })
 export class Session {

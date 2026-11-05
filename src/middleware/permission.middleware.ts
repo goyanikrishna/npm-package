@@ -1,8 +1,8 @@
 // Dynamic Role & Permission Middleware
-import { NextFunction, Request, Response } from 'express';
-import { roleService } from '../role/services/role.service';
 import { AuthException } from '../errors/auth.errors';
 import { PermissionDeniedError } from '../errors/role.errors';
+import { roleService } from '../role/services/role.service';
+import { NextFunction, Request, Response } from 'express';
 
 export const hasPermission = (...requiredPermissions: string[]) => {
   return async (req: Request, _res: Response, next: NextFunction): Promise<void> => {

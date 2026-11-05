@@ -1,9 +1,9 @@
 // Template Service using Handlebars and Dynamic Branding Injection
-import handlebars from 'handlebars';
-import fs from 'fs';
-import path from 'path';
 import { configManager } from '../../config/config.manager';
 import { EmailTemplateNotFoundError } from '../../errors/email.errors';
+import fs from 'fs';
+import handlebars from 'handlebars';
+import path from 'path';
 
 const DEFAULT_TEMPLATES: Record<string, string> = {
   welcome: `
@@ -17,11 +17,11 @@ const DEFAULT_TEMPLATES: Record<string, string> = {
       <h1 style="margin: 0; font-size: 24px;">Welcome to {{project_name}}!</h1>
     </div>
     <div style="padding: 24px; line-height: 1.6;">
-      <p>Hello <strong>{{firstName}}</strong>,</p>
+      <p>Hello <strong>{{first_name}}</strong>,</p>
       <p>Your account has been successfully created. We are thrilled to have you with us!</p>
-      {{#if loginUrl}}
+      {{#if login_url}}
       <p style="text-align: center; margin: 30px 0;">
-        <a href="{{{loginUrl}}}" style="background-color: {{primary_color}}; color: #ffffff; padding: 12px 24px; text-decoration: none; border-radius: 4px; font-weight: bold; display: inline-block;">Log In to Your Account</a>
+        <a href="{{{login_url}}}" style="background-color: {{primary_color}}; color: #ffffff; padding: 12px 24px; text-decoration: none; border-radius: 4px; font-weight: bold; display: inline-block;">Log In to Your Account</a>
       </p>
       {{/if}}
       <p>If you have any questions, feel free to contact us at <a href="mailto:{{support_email}}">{{support_email}}</a>.</p>
@@ -48,7 +48,7 @@ const DEFAULT_TEMPLATES: Record<string, string> = {
       <p>Hello,</p>
       <p>We received a request to reset your password for your <strong>{{project_name}}</strong> account.</p>
       <p style="text-align: center; margin: 30px 0;">
-        <a href="{{{resetUrl}}}" style="background-color: {{primary_color}}; color: #ffffff; padding: 12px 24px; text-decoration: none; border-radius: 4px; font-weight: bold; display: inline-block;">Reset Password</a>
+        <a href="{{{reset_url}}}" style="background-color: {{primary_color}}; color: #ffffff; padding: 12px 24px; text-decoration: none; border-radius: 4px; font-weight: bold; display: inline-block;">Reset Password</a>
       </p>
       <p>Or use this token: <code style="background: #eee; padding: 4px 8px; border-radius: 4px;">{{token}}</code></p>
       <p>This link is valid for 60 minutes. If you did not request this, you can safely ignore this email.</p>

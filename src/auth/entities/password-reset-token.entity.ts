@@ -1,4 +1,5 @@
 // Password Reset Token Entity
+import { Project } from '../../project/entities/project.entity';
 import {
   Column,
   CreateDateColumn,
@@ -9,7 +10,6 @@ import {
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
-import { Project } from '../../project/entities/project.entity';
 
 @Entity({ name: 'password_reset_tokens' })
 export class PasswordResetToken {

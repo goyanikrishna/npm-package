@@ -1,8 +1,8 @@
 // Password Service for node-backend-toolkit
-import bcrypt from 'bcryptjs';
 import { configManager } from '../../config/config.manager';
 import { IPasswordPolicyConfig } from '../../config/types';
 import { BadRequestException } from '../../errors/base.error';
+import bcrypt from 'bcryptjs';
 
 export class PasswordService {
   public async hashPassword(password: string, salt_rounds?: number): Promise<string> {

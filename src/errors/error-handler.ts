@@ -1,6 +1,6 @@
 // Error handler middleware and response formatter
-import { NextFunction, Request, Response } from 'express';
 import { ToolkitError } from './base.error';
+import { NextFunction, Request, Response } from 'express';
 
 export interface IFormattedErrorResponse {
   success: false;

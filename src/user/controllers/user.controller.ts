@@ -1,9 +1,9 @@
 // User Controller
-import { Request, Response, RequestHandler } from 'express';
-import { userService } from '../services/user.service';
-import { sendResponse } from '../../utils/response.util';
-import { asyncHandler } from '../../utils/async-handler.util';
 import { SuccessMessages } from '../../constants/app-message.constant';
+import { asyncHandler } from '../../utils/async-handler.util';
+import { sendResponse } from '../../utils/response.util';
+import { userService } from '../services/user.service';
+import { Request, RequestHandler, Response } from 'express';
 
 const create = asyncHandler(async (req: Request, res: Response): Promise<void> => {
   const { body, project_id, user } = req;
@@ -27,13 +27,7 @@ const getById = asyncHandler(async (req: Request, res: Response): Promise<void> 
 const update = asyncHandler(async (req: Request, res: Response): Promise<void> => {
   const { params, body, project_id, user } = req;
   const { id } = params;
-  const result = await userService.updateUser(
-    id,
-    project_id!,
-    body,
-    user?.id,
-    user?.role,
-  );
+  const result = await userService.updateUser(id, project_id!, body, user?.id, user?.role);
   sendResponse(res, result, SuccessMessages.USER_UPDATED, 200);
 });
 
@@ -44,15 +38,7 @@ const deleteUser = asyncHandler(async (req: Request, res: Response): Promise<voi
   sendResponse(res, null, SuccessMessages.USER_DELETED, 200);
 });
 
-export interface IUserController {
-  create: RequestHandler;
-  list: RequestHandler;
-  getById: RequestHandler;
-  update: RequestHandler;
-  delete: RequestHandler;
-}
-
-export const userController: IUserController = {
+export const userController: Record<string, RequestHandler> = {
   create,
   list,
   getById,

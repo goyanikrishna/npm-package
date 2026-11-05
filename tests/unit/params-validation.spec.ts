@@ -49,7 +49,9 @@ describe('Authoritative Params Validation (snake_case only)', () => {
         new_password: '123',
       });
       expect(shortPassword.error).toBeDefined();
-      expect(shortPassword.error?.message).toContain('"new_password" length must be at least 8 characters long');
+      expect(shortPassword.error?.message).toContain(
+        '"new_password" length must be at least 8 characters long',
+      );
 
       const valid = authParams.resetPassword.body.validate({
         token: 'token-123',
@@ -125,4 +127,3 @@ describe('Authoritative Params Validation (snake_case only)', () => {
     });
   });
 });
-

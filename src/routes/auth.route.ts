@@ -1,15 +1,12 @@
 // Third-party modules
-import { Router } from 'express';
-
 // Controllers
 import { authController } from '../auth/controllers/auth.controller';
-
 // Middlewares
 import { authorizeMiddleware } from '../middleware/authorize.middleware';
-
 // Validators
 import { authParams } from '../validators/auth.validator';
 import { validate } from '../validators/validate.middleware';
+import { Router } from 'express';
 
 const router = Router({ mergeParams: true });
 
@@ -49,7 +46,7 @@ router
   .post(validate(authParams.changePassword), authController.changePassword);
 
 /** POST /api/:project_slug/auth/logout - Revoke refresh token session */
-router.route('/logout').post(authController.logout);
+router.route('/logout').post(validate(authParams.logout), authController.logout);
 
 /** DELETE /api/:project_slug/auth/account - Self account deletion */
 router.route('/account').delete(validate(authParams.deleteAccount), authController.deleteAccount);

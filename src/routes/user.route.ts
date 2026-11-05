@@ -1,16 +1,13 @@
 // Third-party modules
-import { Router } from 'express';
-
-// Controllers
-import { userController } from '../user/controllers/user.controller';
-
 // Middlewares
 import { authorizeMiddleware } from '../middleware/authorize.middleware';
 import { hasPermission } from '../middleware/permission.middleware';
-
+// Controllers
+import { userController } from '../user/controllers/user.controller';
 // Validators
 import { userParams } from '../validators/user.validator';
 import { validate } from '../validators/validate.middleware';
+import { Router } from 'express';
 
 const router = Router({ mergeParams: true });
 

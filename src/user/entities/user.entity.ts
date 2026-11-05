@@ -1,4 +1,7 @@
 // User Entity for node-backend-toolkit
+import { Project } from '../../project/entities/project.entity';
+import { Session } from '../../session/entities/session.entity';
+import { UserProfile } from './user-profile.entity';
 import bcrypt from 'bcryptjs';
 import {
   BeforeInsert,
@@ -15,9 +18,6 @@ import {
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
-import { Project } from '../../project/entities/project.entity';
-import { UserProfile } from './user-profile.entity';
-import { Session } from '../../session/entities/session.entity';
 
 @Entity({ name: 'users' })
 @Index('idx_users_project_email_unique_active', ['project_id', 'email'], {

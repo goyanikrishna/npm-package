@@ -1,16 +1,16 @@
 // Project Service for node-backend-toolkit
-import { Repository } from 'typeorm';
-import { Project } from '../entities/project.entity';
 import { getDataSource } from '../../database/datasource';
 import { DuplicateProjectError, ProjectNotFoundError } from '../../errors/project.errors';
-import { slugify } from '../../utils/slug.util';
 import {
-  parsePagination,
   formatPaginatedResponse,
-  IPaginationQuery,
   IPaginatedResult,
+  IPaginationQuery,
+  parsePagination,
 } from '../../utils/pagination.util';
+import { slugify } from '../../utils/slug.util';
+import { Project } from '../entities/project.entity';
 import { ICreateProjectDto, IUpdateProjectDto } from '../types';
+import { Repository } from 'typeorm';
 
 export { ICreateProjectDto, IUpdateProjectDto };
 

@@ -1,18 +1,18 @@
 // Bootstrap Service for initializing multi-project backend, roles, and Super Admin
-import { DataSource } from 'typeorm';
-import { Router } from 'express';
-import { IBackendConfig } from '../config/types';
+import { passwordService } from '../auth/services/password.service';
 import { configManager } from '../config/config.manager';
+import { IBackendConfig } from '../config/types';
 import { initializeDataSource } from '../database/datasource';
+import { Project } from '../project/entities/project.entity';
 import { projectService } from '../project/services/project.service';
 import { roleService } from '../role/services/role.service';
-import { Project } from '../project/entities/project.entity';
-import { User } from '../user/entities/user.entity';
-import { UserProfile } from '../user/entities/user-profile.entity';
-import { slugify } from '../utils/slug.util';
-import { normalizeEmail } from '../utils/email-normalizer.util';
-import { passwordService } from '../auth/services/password.service';
 import { createBackendRouter } from '../routes';
+import { UserProfile } from '../user/entities/user-profile.entity';
+import { User } from '../user/entities/user.entity';
+import { normalizeEmail } from '../utils/email-normalizer.util';
+import { slugify } from '../utils/slug.util';
+import { Router } from 'express';
+import { DataSource } from 'typeorm';
 
 export interface IBootstrapResult {
   dataSource: DataSource;

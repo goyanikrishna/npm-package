@@ -1,8 +1,8 @@
 // SMTP Email Provider using Nodemailer
-import nodemailer, { Transporter } from 'nodemailer';
-import { IEmailProvider, ISendEmailOptions } from './email-provider.interface';
 import { ISmtpConfig } from '../../config/types';
 import { EmailError } from '../../errors/email.errors';
+import { IEmailProvider, ISendEmailOptions } from './email-provider.interface';
+import nodemailer, { Transporter } from 'nodemailer';
 
 export class SmtpProvider implements IEmailProvider {
   private transporter: Transporter;

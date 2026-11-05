@@ -1,7 +1,7 @@
 // Email and Template Service Unit Tests
-import { templateService } from '../../src/email/services/template.service';
-import { emailService } from '../../src/email/services/email.service';
 import { configManager } from '../../src/config/config.manager';
+import { emailService } from '../../src/email/services/email.service';
+import { templateService } from '../../src/email/services/template.service';
 import { EmailTemplateNotFoundError } from '../../src/errors/email.errors';
 
 describe('Email & Template System', () => {
@@ -17,8 +17,8 @@ describe('Email & Template System', () => {
       },
       superAdmin: {
         email: 'admin@healthportal.com',
-        firstName: 'Super',
-        lastName: 'Admin',
+        first_name: 'Super',
+        last_name: 'Admin',
         password: 'Password123!',
       },
       branding: {
@@ -43,8 +43,8 @@ describe('Email & Template System', () => {
   describe('Template Service', () => {
     it('should render welcome template with branding variables injected', () => {
       const html = templateService.render('welcome', {
-        firstName: 'Alice',
-        loginUrl: 'https://app.healthportal.com/login',
+        first_name: 'Alice',
+        login_url: 'https://app.healthportal.com/login',
       });
 
       expect(html).toContain('Welcome to HealthPortal Pro!');
@@ -57,7 +57,7 @@ describe('Email & Template System', () => {
     it('should render forgot-password template with token and reset URL', () => {
       const html = templateService.render('forgot-password', {
         token: 'abcd1234xyz',
-        resetUrl: 'https://app.healthportal.com/reset-password?token=abcd1234xyz',
+        reset_url: 'https://app.healthportal.com/reset-password?token=abcd1234xyz',
       });
 
       expect(html).toContain('Password Reset Request');
@@ -80,7 +80,7 @@ describe('Email & Template System', () => {
       });
 
       await emailService.sendWelcomeEmail('alice@example.com', {
-        firstName: 'Alice',
+        first_name: 'Alice',
       });
 
       expect(queuedJobs.length).toBe(1);

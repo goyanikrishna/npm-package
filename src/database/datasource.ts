@@ -1,8 +1,8 @@
 // DataSource Manager for node-backend-toolkit
+import { getPostgresOptions } from './config';
 import 'reflect-metadata';
 import { DataSource } from 'typeorm';
 import { PostgresConnectionOptions } from 'typeorm/driver/postgres/PostgresConnectionOptions';
-import { getPostgresOptions } from './config';
 
 let appDataSource: DataSource | null = null;
 

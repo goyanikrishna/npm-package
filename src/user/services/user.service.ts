@@ -1,25 +1,25 @@
 // User Service for node-backend-toolkit
-import { EntityManager, IsNull, Repository } from 'typeorm';
-import { User } from '../entities/user.entity';
-import { UserProfile } from '../entities/user-profile.entity';
-import { getDataSource } from '../../database/datasource';
+import { passwordService } from '../../auth/services/password.service';
 import { configManager } from '../../config/config.manager';
+import { getDataSource } from '../../database/datasource';
 import {
   DuplicateEmailError,
   SelfDemotionError,
   SuperAdminProtectedError,
   UserNotFoundError,
 } from '../../errors/user.errors';
+import { sessionService } from '../../session/services/session.service';
 import { normalizeEmail } from '../../utils/email-normalizer.util';
 import {
-  parsePagination,
   formatPaginatedResponse,
   IPaginatedResult,
+  parsePagination,
 } from '../../utils/pagination.util';
-import { validateDynamicFields } from '../validators/dynamic-field.validator';
-import { passwordService } from '../../auth/services/password.service';
-import { sessionService } from '../../session/services/session.service';
+import { UserProfile } from '../entities/user-profile.entity';
+import { User } from '../entities/user.entity';
 import { ICreateUserDto, IUpdateUserDto, IUserFilterQuery } from '../types';
+import { validateDynamicFields } from '../validators/dynamic-field.validator';
+import { EntityManager, IsNull, Repository } from 'typeorm';
 
 export { ICreateUserDto, IUpdateUserDto, IUserFilterQuery };
 
@@ -99,16 +99,12 @@ export class UserService {
     const hashedPassword = await passwordService.validateAndHash(rawPassword);
 
     const sanitizedProfile = this.extractAndValidateProfile(dto, false) || {};
-
-    const firstName = (dto.first_name || '').trim();
-    const lastName = (dto.last_name || '').trim();
-
     const ds = getDataSource();
     return ds.transaction(async (manager) => {
       const user = manager.create(User, {
         project_id: project_id,
-        first_name: firstName,
-        last_name: lastName,
+        first_name: (dto.first_name || '').trim(),
+        last_name: (dto.last_name || '').trim(),
         phone: dto.phone || null,
         email,
         password: hashedPassword,

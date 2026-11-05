@@ -5,4 +5,3 @@ export interface ICreateSessionOptions {
   ip_address?: string;
   user_agent?: string;
 }
-

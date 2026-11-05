@@ -1,8 +1,8 @@
 // Database Configuration Builder
-import { SnakeNamingStrategy } from 'typeorm-naming-strategies';
-import { PostgresConnectionOptions } from 'typeorm/driver/postgres/PostgresConnectionOptions';
 import { configManager } from '../config/config.manager';
 import { PACKAGE_ENTITIES } from './entities';
+import { SnakeNamingStrategy } from 'typeorm-naming-strategies';
+import { PostgresConnectionOptions } from 'typeorm/driver/postgres/PostgresConnectionOptions';
 
 export const getPostgresOptions = (
   customEntities: unknown[] = [],

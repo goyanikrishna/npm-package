@@ -1,9 +1,9 @@
 #!/usr/bin/env node
 // CLI for node-backend-toolkit
+import { IUserFieldConfig } from '../config/types';
+import { generateMigration } from '../database/dynamic-fields/migration-generator';
 import fs from 'fs';
 import path from 'path';
-import { generateMigration } from '../database/dynamic-fields/migration-generator';
-import { IUserFieldConfig } from '../config/types';
 
 const printHelp = () => {
   console.log(`

@@ -1,7 +1,7 @@
 // Configuration Validation using Joi
-import Joi from 'joi';
-import { IBackendConfig, IUserFieldConfig } from './types';
 import { ConfigurationError } from '../errors/config.errors';
+import { IBackendConfig, IUserFieldConfig } from './types';
+import Joi from 'joi';
 
 const SQL_RESERVED_WORDS = new Set([
   'select',

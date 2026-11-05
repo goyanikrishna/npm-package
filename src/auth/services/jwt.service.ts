@@ -1,8 +1,8 @@
 // JWT Service for Access Token Management
-import jwt, { SignOptions } from 'jsonwebtoken';
 import { configManager } from '../../config/config.manager';
-import { IJwtPayload } from '../types';
 import { InvalidTokenError, TokenExpiredError } from '../../errors/auth.errors';
+import { IJwtPayload } from '../types';
+import jwt, { SignOptions } from 'jsonwebtoken';
 
 export class JwtService {
   public signAccessToken(payload: IJwtPayload): string {

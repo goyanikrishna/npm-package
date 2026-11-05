@@ -1,13 +1,11 @@
 // Third-party modules
-import { Router } from 'express';
-
 // Middlewares
 import authorize from '../middleware/authorize.middleware';
 import { projectContextMiddleware } from '../middleware/project-context.middleware';
-
 // Routes
 import authRouter from './auth.route';
 import userRouter from './user.route';
+import { Router } from 'express';
 
 const router = Router({ mergeParams: true });
 

@@ -1,5 +1,5 @@
 // Async Handler utility to eliminate controller try/catch boilerplate
-import { NextFunction, Request, Response, RequestHandler } from 'express';
+import { NextFunction, Request, RequestHandler, Response } from 'express';
 
 export type AsyncRequestHandler = (
   req: Request,
@@ -12,4 +12,3 @@ export const asyncHandler = (fn: AsyncRequestHandler): RequestHandler => {
     Promise.resolve(fn(req, res, next)).catch(next);
   };
 };
-

@@ -1,4 +1,6 @@
 // RolePermission Join Entity
+import { Permission } from './permission.entity';
+import { Role } from './role.entity';
 import {
   Column,
   CreateDateColumn,
@@ -8,8 +10,6 @@ import {
   ManyToOne,
   PrimaryGeneratedColumn,
 } from 'typeorm';
-import { Role } from './role.entity';
-import { Permission } from './permission.entity';
 
 @Entity({ name: 'role_permissions' })
 @Index('idx_role_permissions_unique', ['role_id', 'permission_id'], { unique: true })

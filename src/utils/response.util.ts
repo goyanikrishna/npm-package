@@ -1,6 +1,6 @@
 // Response utility for node-backend-toolkit
-import { Response } from 'express';
 import { SuccessMessages } from '../constants/app-message.constant';
+import { Response } from 'express';
 
 export interface IApiResponse<T = unknown> {
   success: boolean;

@@ -1,4 +1,5 @@
 // Singleton Config Manager for node-backend-toolkit
+import { ConfigurationError } from '../errors/config.errors';
 import {
   IAuthConfig,
   IBackendConfig,
@@ -12,7 +13,6 @@ import {
   IUsersConfig,
 } from './types';
 import { validateConfig } from './validation';
-import { ConfigurationError } from '../errors/config.errors';
 
 class ConfigManager {
   private static instance: ConfigManager;

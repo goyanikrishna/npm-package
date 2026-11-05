@@ -1,8 +1,8 @@
 // Validation Middleware using Joi schemas
+import { ErrMessages } from '../constants/app-message.constant';
+import { BadRequestException } from '../errors/base.error';
 import { NextFunction, Request, Response } from 'express';
 import { Schema } from 'joi';
-import { BadRequestException } from '../errors/base.error';
-import { ErrMessages } from '../constants/app-message.constant';
 
 export interface IValidationSchema {
   body?: Schema;

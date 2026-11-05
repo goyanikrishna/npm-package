@@ -1,10 +1,10 @@
 // Email Service coordinating providers, templates, and branding
 import { configManager } from '../../config/config.manager';
 import { IEmailProvider } from '../providers/email-provider.interface';
-import { SmtpProvider } from '../providers/smtp.provider';
 import { ResendProvider } from '../providers/resend.provider';
-import { templateService } from './template.service';
+import { SmtpProvider } from '../providers/smtp.provider';
 import { EmailQueueHandler } from '../types';
+import { templateService } from './template.service';
 
 export { EmailQueueHandler };
 
@@ -66,26 +66,30 @@ export class EmailService {
 
   public async sendWelcomeEmail(
     to: string,
-    data: { firstName: string; loginUrl?: string },
+    data: { first_name: string; login_url?: string },
   ): Promise<void> {
     const branding = configManager.getBranding();
-    await this.send(to, `Welcome to ${branding.project_name}!`, 'welcome', data);
+    await this.send(to, `Welcome to ${branding.project_name}!`, 'welcome', {
+      ...data,
+      firstName: data.first_name,
+      loginUrl: data.login_url,
+    });
   }
 
   public async sendForgotPasswordEmail(
     to: string,
-    data: { token: string; resetUrl?: string },
+    data: { token: string; reset_url?: string },
   ): Promise<void> {
     const branding = configManager.getBranding();
-    const resetUrl =
-      data.resetUrl ||
+    const reset_url =
+      data.reset_url ||
       (branding.frontend_url
         ? `${branding.frontend_url}/reset-password?token=${data.token}`
         : undefined);
 
     await this.send(to, `Reset your password for ${branding.project_name}`, 'forgot-password', {
       ...data,
-      resetUrl,
+      reset_url,
     });
   }
 

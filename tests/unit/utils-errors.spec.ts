@@ -1,15 +1,10 @@
 // Utilities and Error Formatting Unit Tests
-import { sendResponse } from '../../src/utils/response.util';
-import { parsePagination, formatPaginatedResponse } from '../../src/utils/pagination.util';
-import { slugify } from '../../src/utils/slug.util';
-import { normalizeEmail } from '../../src/utils/email-normalizer.util';
+import { ForbiddenException, UserNotFoundError } from '../../src/errors';
 import { formatErrorResponse } from '../../src/errors/error-handler';
-import {
-  ToolkitError,
-  BadRequestException,
-  ForbiddenException,
-  UserNotFoundError,
-} from '../../src/errors';
+import { normalizeEmail } from '../../src/utils/email-normalizer.util';
+import { formatPaginatedResponse, parsePagination } from '../../src/utils/pagination.util';
+import { sendResponse } from '../../src/utils/response.util';
+import { slugify } from '../../src/utils/slug.util';
 
 describe('Utilities & Error Handling', () => {
   describe('Response Utility', () => {

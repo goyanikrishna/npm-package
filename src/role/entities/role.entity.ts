@@ -1,4 +1,6 @@
 // Role Entity
+import { Project } from '../../project/entities/project.entity';
+import { RolePermission } from './role-permission.entity';
 import {
   Column,
   CreateDateColumn,
@@ -10,8 +12,6 @@ import {
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
-import { Project } from '../../project/entities/project.entity';
-import { RolePermission } from './role-permission.entity';
 
 @Entity({ name: 'roles' })
 @Index('idx_roles_project_name_unique', ['project_id', 'name'], { unique: true })

@@ -1,4 +1,5 @@
 // Permission Entity
+import { RolePermission } from './role-permission.entity';
 import {
   Column,
   CreateDateColumn,
@@ -7,7 +8,6 @@ import {
   OneToMany,
   PrimaryGeneratedColumn,
 } from 'typeorm';
-import { RolePermission } from './role-permission.entity';
 
 @Entity({ name: 'permissions' })
 export class Permission {

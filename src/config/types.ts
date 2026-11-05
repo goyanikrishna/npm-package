@@ -135,7 +135,8 @@ export interface IR2StorageConfig {
   provider: 'r2';
   bucket: string;
   region?: string;
-  accountId: string;
+  accountId?: string;
+  account_id?: string;
   access_key_id: string;
   secret_access_key: string;
   public_url?: string;

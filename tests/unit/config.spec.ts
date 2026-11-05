@@ -27,8 +27,8 @@ describe('Config System', () => {
     },
     superAdmin: {
       email: 'admin@acme.com',
-      firstName: 'Super',
-      lastName: 'Admin',
+      first_name: 'Super',
+      last_name: 'Admin',
       password: 'SuperAdmin123!',
     },
   };

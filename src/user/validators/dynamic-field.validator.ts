@@ -43,7 +43,8 @@ export const validateDynamicFields = (
         if (typeof val !== 'string') {
           errors[field.name] = `Field "${field.name}" must be a string`;
         } else if (field.max_length && val.length > field.max_length) {
-          errors[field.name] = `Field "${field.name}" exceeds maximum length of ${field.max_length}`;
+          errors[field.name] =
+            `Field "${field.name}" exceeds maximum length of ${field.max_length}`;
         } else {
           sanitized[field.name] = val;
         }

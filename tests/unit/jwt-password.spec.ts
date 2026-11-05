@@ -26,8 +26,8 @@ describe('JWT & Password Services', () => {
       },
       superAdmin: {
         email: 'admin@test.com',
-        firstName: 'Admin',
-        lastName: 'User',
+        first_name: 'Admin',
+        last_name: 'User',
         password: 'Password123!',
       },
     });

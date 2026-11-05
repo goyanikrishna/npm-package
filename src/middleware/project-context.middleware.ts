@@ -1,8 +1,8 @@
 // Project Context Middleware for Multi-Tenancy Resolution
-import { NextFunction, Request, Response } from 'express';
-import { projectService } from '../project/services/project.service';
 import { ProjectNotFoundError } from '../errors/project.errors';
 import { Project } from '../project/entities/project.entity';
+import { projectService } from '../project/services/project.service';
+import { NextFunction, Request, Response } from 'express';
 
 // Extend Express Request
 declare global {

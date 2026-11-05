@@ -1,4 +1,6 @@
 // Project Entity for Multi-Project / Multi-Tenant Isolation
+import { Role } from '../../role/entities/role.entity';
+import { User } from '../../user/entities/user.entity';
 import {
   Column,
   CreateDateColumn,
@@ -8,8 +10,6 @@ import {
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
-import { User } from '../../user/entities/user.entity';
-import { Role } from '../../role/entities/role.entity';
 
 @Entity({ name: 'projects' })
 export class Project {

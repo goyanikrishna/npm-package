@@ -1,14 +1,14 @@
 // Security & Authorization Middleware Unit Tests
-import { projectContextMiddleware } from '../../src/middleware/project-context.middleware';
-import { authorizeMiddleware } from '../../src/middleware/authorize.middleware';
-import { hasPermission } from '../../src/middleware/permission.middleware';
 import { jwtService } from '../../src/auth/services/jwt.service';
-import { userService } from '../../src/user/services/user.service';
-import { roleService } from '../../src/role/services/role.service';
-import { projectService } from '../../src/project/services/project.service';
 import { AuthException } from '../../src/errors/auth.errors';
 import { ProjectMismatchError, ProjectNotFoundError } from '../../src/errors/project.errors';
 import { PermissionDeniedError } from '../../src/errors/role.errors';
+import { authorizeMiddleware } from '../../src/middleware/authorize.middleware';
+import { hasPermission } from '../../src/middleware/permission.middleware';
+import { projectContextMiddleware } from '../../src/middleware/project-context.middleware';
+import { projectService } from '../../src/project/services/project.service';
+import { roleService } from '../../src/role/services/role.service';
+import { userService } from '../../src/user/services/user.service';
 
 describe('Security & Authorization Middleware', () => {
   describe('Project Context Middleware', () => {

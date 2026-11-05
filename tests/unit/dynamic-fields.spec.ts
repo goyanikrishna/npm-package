@@ -1,11 +1,11 @@
 // Dynamic Fields & Migration Generator Unit Tests
-import { validateDynamicFields } from '../../src/user/validators/dynamic-field.validator';
+import { IUserFieldConfig } from '../../src/config/types';
 import {
   generateMigration,
   mapTypeToPostgres,
 } from '../../src/database/dynamic-fields/migration-generator';
-import { IUserFieldConfig } from '../../src/config/types';
 import { DynamicFieldValidationError } from '../../src/errors/config.errors';
+import { validateDynamicFields } from '../../src/user/validators/dynamic-field.validator';
 
 describe('Dynamic Fields System', () => {
   const fieldsConfig: IUserFieldConfig[] = [

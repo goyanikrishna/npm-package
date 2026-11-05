@@ -1,10 +1,10 @@
 // Auth Controller
-import { Request, Response, RequestHandler } from 'express';
-import { authService } from '../services/auth.service';
-import { sendResponse } from '../../utils/response.util';
+import { SuccessMessages } from '../../constants/app-message.constant';
 import { asyncHandler } from '../../utils/async-handler.util';
 import { getClientMeta } from '../../utils/request.util';
-import { SuccessMessages } from '../../constants/app-message.constant';
+import { sendResponse } from '../../utils/response.util';
+import { authService } from '../services/auth.service';
+import { Request, RequestHandler, Response } from 'express';
 
 const register = asyncHandler(async (req: Request, res: Response): Promise<void> => {
   const { body, project_id } = req;
@@ -72,20 +72,7 @@ const deleteAccount = asyncHandler(async (req: Request, res: Response): Promise<
   sendResponse(res, null, SuccessMessages.ACCOUNT_DELETED, 200);
 });
 
-export interface IAuthController {
-  register: RequestHandler;
-  login: RequestHandler;
-  refreshToken: RequestHandler;
-  forgotPassword: RequestHandler;
-  resetPassword: RequestHandler;
-  getProfile: RequestHandler;
-  updateProfile: RequestHandler;
-  changePassword: RequestHandler;
-  logout: RequestHandler;
-  deleteAccount: RequestHandler;
-}
-
-export const authController: IAuthController = {
+export const authController: Record<string, RequestHandler> = {
   register,
   login,
   refreshToken,

@@ -1,4 +1,7 @@
 // AWS S3 Storage Provider
+import { IS3StorageConfig } from '../../config/types';
+import { StorageError } from '../../errors/storage.errors';
+import { IFileMetadata, IStorageProvider } from './storage-provider.interface';
 import {
   DeleteObjectCommand,
   DeleteObjectsCommand,
@@ -8,9 +11,6 @@ import {
   S3Client,
 } from '@aws-sdk/client-s3';
 import { getSignedUrl } from '@aws-sdk/s3-request-presigner';
-import { IFileMetadata, IStorageProvider } from './storage-provider.interface';
-import { IS3StorageConfig } from '../../config/types';
-import { StorageError } from '../../errors/storage.errors';
 
 export class S3StorageProvider implements IStorageProvider {
   public readonly name = 's3';
@@ -26,8 +26,8 @@ export class S3StorageProvider implements IStorageProvider {
       region: config.region || 'us-east-1',
       endpoint: config.endpoint,
       credentials: {
-        access_key_id: config.access_key_id,
-        secret_access_key: config.secret_access_key,
+        accessKeyId: config.access_key_id,
+        secretAccessKey: config.secret_access_key,
       },
     });
   }
@@ -51,7 +51,7 @@ export class S3StorageProvider implements IStorageProvider {
         Bucket: this.bucket,
         Key: cleanKey,
         Body: body,
-        content_type: mimeType,
+        ContentType: mimeType,
       });
 
       await this.client.send(command);
@@ -154,10 +154,10 @@ export class S3StorageProvider implements IStorageProvider {
       const res = await this.client.send(command);
 
       return {
-        content_length: res.content_length ?? 0,
-        content_type: res.content_type ?? 'application/octet-stream',
+        content_length: res.ContentLength ?? 0,
+        content_type: res.ContentType ?? 'application/octet-stream',
         etag: res.ETag,
-        last_modified: res.last_modified,
+        last_modified: res.LastModified,
       };
     } catch (err: unknown) {
       const msg = err instanceof Error ? err.message : 'Unknown S3 error';

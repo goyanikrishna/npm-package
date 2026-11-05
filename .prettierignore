@@ -1,0 +1,28 @@
+# Build output
+dist/
+build/
+
+# Dependencies
+node_modules/
+
+# Package files
+package.json
+package-lock.json
+
+# Environment variables
+.env
+.env.*
+!.env.example
+
+# Coverage reports
+coverage/
+
+# Logs
+logs/
+*.log
+
+# Database migrations
+src/database/migrations/
+
+# Handlebars templates
+src/resources/views/**/*.handlebars
