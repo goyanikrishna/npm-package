@@ -8,120 +8,127 @@ import { templateService } from './template.service';
 
 export { EmailQueueHandler };
 
-export class EmailService {
-  private provider: IEmailProvider | null = null;
-  private queueHandler: EmailQueueHandler | null = null;
+let activeEmailProvider: IEmailProvider | null = null;
+let activeQueueHandler: EmailQueueHandler | null = null;
 
-  public setQueueHandler(handler: EmailQueueHandler): void {
-    this.queueHandler = handler;
+const setEmailQueueHandler = (handler: EmailQueueHandler): void => {
+  activeQueueHandler = handler;
+};
+
+const getEmailProvider = (): IEmailProvider | null => {
+  if (activeEmailProvider) return activeEmailProvider;
+
+  const emailConfig = configManager.getEmail();
+  if (!emailConfig) return null;
+
+  if (emailConfig.provider === 'smtp' && emailConfig.smtp) {
+    activeEmailProvider = new SmtpProvider(emailConfig.smtp, emailConfig.from);
+  } else if (emailConfig.provider === 'resend' && emailConfig.resend) {
+    activeEmailProvider = new ResendProvider(emailConfig.resend, emailConfig.from);
   }
 
-  private getProvider(): IEmailProvider | null {
-    if (this.provider) return this.provider;
+  return activeEmailProvider;
+};
 
-    const emailConfig = configManager.getEmail();
-    if (!emailConfig) return null;
-
-    if (emailConfig.provider === 'smtp' && emailConfig.smtp) {
-      this.provider = new SmtpProvider(emailConfig.smtp, emailConfig.from);
-    } else if (emailConfig.provider === 'resend' && emailConfig.resend) {
-      this.provider = new ResendProvider(emailConfig.resend, emailConfig.from);
-    }
-
-    return this.provider;
+const sendEmail = async (
+  to: string,
+  subject: string,
+  templateName: string,
+  context: Record<string, unknown> = {},
+): Promise<void> => {
+  const provider = getEmailProvider();
+  if (!provider) {
+    // Email is not configured; silently skip or log info
+    return;
   }
 
-  public async send(
-    to: string,
-    subject: string,
-    templateName: string,
-    context: Record<string, unknown> = {},
-  ): Promise<void> {
-    const provider = this.getProvider();
-    if (!provider) {
-      // Email is not configured; silently skip or log info
-      return;
-    }
+  const html = templateService.render(templateName, context);
+  const emailConfig = configManager.getEmail();
 
-    const html = templateService.render(templateName, context);
-    const emailConfig = configManager.getEmail();
-
-    if (this.queueHandler) {
-      await this.queueHandler({
-        to,
-        subject,
-        html,
-        from: emailConfig?.from,
-      });
-      return;
-    }
-
-    await provider.sendEmail({
+  if (activeQueueHandler) {
+    await activeQueueHandler({
       to,
       subject,
       html,
       from: emailConfig?.from,
     });
+    return;
   }
 
-  public async sendWelcomeEmail(
-    to: string,
-    data: { first_name: string; login_url?: string },
-  ): Promise<void> {
-    const branding = configManager.getBranding();
-    await this.send(to, `Welcome to ${branding.project_name}!`, 'welcome', {
-      ...data,
-      firstName: data.first_name,
-      loginUrl: data.login_url,
-    });
-  }
+  await provider.sendEmail({
+    to,
+    subject,
+    html,
+    from: emailConfig?.from,
+  });
+};
 
-  public async sendForgotPasswordEmail(
-    to: string,
-    data: { token: string; reset_url?: string },
-  ): Promise<void> {
-    const branding = configManager.getBranding();
-    const reset_url =
-      data.reset_url ||
-      (branding.frontend_url
-        ? `${branding.frontend_url}/reset-password?token=${data.token}`
-        : undefined);
+const sendWelcomeEmail = async (
+  to: string,
+  data: { first_name: string; login_url?: string },
+): Promise<void> => {
+  const branding = configManager.getBranding();
+  await sendEmail(to, `Welcome to ${branding.project_name}!`, 'welcome', {
+    ...data,
+    firstName: data.first_name,
+    loginUrl: data.login_url,
+  });
+};
 
-    await this.send(to, `Reset your password for ${branding.project_name}`, 'forgot-password', {
-      ...data,
-      reset_url,
-    });
-  }
+const sendForgotPasswordEmail = async (
+  to: string,
+  data: { token: string; reset_url?: string },
+): Promise<void> => {
+  const branding = configManager.getBranding();
+  const reset_url =
+    data.reset_url ||
+    (branding.frontend_url
+      ? `${branding.frontend_url}/reset-password?token=${data.token}`
+      : undefined);
 
-  public async sendPasswordResetSuccessEmail(to: string): Promise<void> {
-    const branding = configManager.getBranding();
-    await this.send(
-      to,
-      `Your ${branding.project_name} password has been reset`,
-      'password-reset',
-      {},
-    );
-  }
+  await sendEmail(to, `Reset your password for ${branding.project_name}`, 'forgot-password', {
+    ...data,
+    reset_url,
+  });
+};
 
-  public async sendPasswordChangedEmail(to: string): Promise<void> {
-    const branding = configManager.getBranding();
-    await this.send(
-      to,
-      `Security Notice: ${branding.project_name} password changed`,
-      'password-changed',
-      {},
-    );
-  }
+const sendPasswordResetSuccessEmail = async (to: string): Promise<void> => {
+  const branding = configManager.getBranding();
+  await sendEmail(
+    to,
+    `Your ${branding.project_name} password has been reset`,
+    'password-reset',
+    {},
+  );
+};
 
-  public async sendAccountDeletedEmail(to: string): Promise<void> {
-    const branding = configManager.getBranding();
-    await this.send(
-      to,
-      `Your ${branding.project_name} account has been deleted`,
-      'account-deleted',
-      {},
-    );
-  }
-}
+const sendPasswordChangedEmail = async (to: string): Promise<void> => {
+  const branding = configManager.getBranding();
+  await sendEmail(
+    to,
+    `Security Notice: ${branding.project_name} password changed`,
+    'password-changed',
+    {},
+  );
+};
 
-export const emailService = new EmailService();
+const sendAccountDeletedEmail = async (to: string): Promise<void> => {
+  const branding = configManager.getBranding();
+  await sendEmail(
+    to,
+    `Your ${branding.project_name} account has been deleted`,
+    'account-deleted',
+    {},
+  );
+};
+
+export const emailService = {
+  setQueueHandler: setEmailQueueHandler,
+  getProvider: getEmailProvider,
+  send: sendEmail,
+  sendWelcomeEmail,
+  sendForgotPasswordEmail,
+  sendPasswordResetSuccessEmail,
+  sendPasswordChangedEmail,
+  sendAccountDeletedEmail,
+};

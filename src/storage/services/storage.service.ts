@@ -14,107 +14,123 @@ import path from 'path';
 
 export { IUploadFileInput, IFileValidationOptions };
 
-export class StorageService {
-  private provider: IStorageProvider | null = null;
+let activeStorageProvider: IStorageProvider | null = null;
 
-  public getProvider(): IStorageProvider {
-    if (this.provider) return this.provider;
+const getStorageProvider = (): IStorageProvider => {
+  if (activeStorageProvider) return activeStorageProvider;
 
-    const storageConfig = configManager.getStorage();
-    if (!storageConfig) {
-      throw new StorageError('Storage is not configured for this backend instance');
-    }
+  const storageConfig = configManager.getStorage();
+  if (!storageConfig) {
+    throw new StorageError('Storage is not configured for this backend instance');
+  }
 
-    if (storageConfig.provider === 's3') {
-      this.provider = new S3StorageProvider(storageConfig);
-    } else if (storageConfig.provider === 'r2') {
-      this.provider = new R2StorageProvider(storageConfig);
-    } else {
-      throw new StorageError(
-        `Unsupported storage provider: ${(storageConfig as { provider?: string }).provider}`,
+  if (storageConfig.provider === 's3') {
+    activeStorageProvider = new S3StorageProvider(storageConfig);
+  } else if (storageConfig.provider === 'r2') {
+    activeStorageProvider = new R2StorageProvider(storageConfig);
+  } else {
+    throw new StorageError(
+      `Unsupported storage provider: ${(storageConfig as { provider?: string }).provider}`,
+    );
+  }
+
+  return activeStorageProvider;
+};
+
+const setMockStorageProvider = (mock: IStorageProvider | null): void => {
+  activeStorageProvider = mock;
+};
+
+const validateStorageFile = (
+  file: IUploadFileInput,
+  options: IFileValidationOptions = {},
+): void => {
+  const max_size_bytes = options.max_size_bytes || 10 * 1024 * 1024; // 10 MB
+
+  if (file.buffer.length > max_size_bytes) {
+    const maxMb = Math.round(max_size_bytes / (1024 * 1024));
+    throw new FileSizeExceededError(`File size exceeds maximum allowed size of ${maxMb}MB`);
+  }
+
+  if (options.allowed_mime_types && options.allowed_mime_types.length > 0) {
+    if (!options.allowed_mime_types.includes(file.mimeType.toLowerCase())) {
+      throw new InvalidFileTypeError(
+        `Invalid file type "${file.mimeType}". Allowed: ${options.allowed_mime_types.join(', ')}`,
       );
     }
-
-    return this.provider;
   }
+};
 
-  public setMockProvider(mock: IStorageProvider | null): void {
-    this.provider = mock;
-  }
+const buildStorageKey = (
+  projectSlug: string,
+  module: string,
+  originalname: string,
+): string => {
+  const safeProjectSlug = projectSlug.replace(/[^a-zA-Z0-9_-]/g, '').slice(0, 50);
+  const safeModule = module.replace(/[^a-zA-Z0-9_-]/g, '').slice(0, 50);
+  const ext = path.extname(originalname).replace(/[^a-zA-Z0-9.]/g, '');
+  const sanitizedBase = path
+    .basename(originalname, ext)
+    .replace(/[^a-zA-Z0-9-_]/g, '_')
+    .slice(0, 50);
 
-  public validateFile(file: IUploadFileInput, options: IFileValidationOptions = {}): void {
-    const max_size_bytes = options.max_size_bytes || 10 * 1024 * 1024; // 10 MB
+  const randomSuffix = crypto.randomUUID().slice(0, 8);
+  return `${safeProjectSlug}/${safeModule}/${Date.now()}-${randomSuffix}-${sanitizedBase}${ext}`;
+};
 
-    if (file.buffer.length > max_size_bytes) {
-      const maxMb = Math.round(max_size_bytes / (1024 * 1024));
-      throw new FileSizeExceededError(`File size exceeds maximum allowed size of ${maxMb}MB`);
-    }
+const uploadFile = async (
+  projectSlug: string,
+  module: string,
+  file: IUploadFileInput,
+  options?: IFileValidationOptions,
+): Promise<{ key: string; url: string }> => {
+  validateStorageFile(file, options);
 
-    if (options.allowed_mime_types && options.allowed_mime_types.length > 0) {
-      if (!options.allowed_mime_types.includes(file.mimeType.toLowerCase())) {
-        throw new InvalidFileTypeError(
-          `Invalid file type "${file.mimeType}". Allowed: ${options.allowed_mime_types.join(', ')}`,
-        );
-      }
-    }
-  }
+  const key = buildStorageKey(projectSlug, module, file.originalname);
+  const provider = getStorageProvider();
+  const url = await provider.uploadFile(key, file.buffer, file.mimeType);
 
-  public buildStorageKey(projectSlug: string, module: string, originalname: string): string {
-    const safeProjectSlug = projectSlug.replace(/[^a-zA-Z0-9_-]/g, '').slice(0, 50);
-    const safeModule = module.replace(/[^a-zA-Z0-9_-]/g, '').slice(0, 50);
-    const ext = path.extname(originalname).replace(/[^a-zA-Z0-9.]/g, '');
-    const sanitizedBase = path
-      .basename(originalname, ext)
-      .replace(/[^a-zA-Z0-9-_]/g, '_')
-      .slice(0, 50);
+  return { key, url };
+};
 
-    const randomSuffix = crypto.randomUUID().slice(0, 8);
-    return `${safeProjectSlug}/${safeModule}/${Date.now()}-${randomSuffix}-${sanitizedBase}${ext}`;
-  }
+const deleteStorageFile = async (key: string): Promise<void> => {
+  const provider = getStorageProvider();
+  await provider.deleteFile(key);
+};
 
-  public async upload(
-    projectSlug: string,
-    module: string,
-    file: IUploadFileInput,
-    options?: IFileValidationOptions,
-  ): Promise<{ key: string; url: string }> {
-    this.validateFile(file, options);
+const deleteManyStorageFiles = async (keys: string[]): Promise<void> => {
+  const provider = getStorageProvider();
+  await provider.deleteFiles(keys);
+};
 
-    const key = this.buildStorageKey(projectSlug, module, file.originalname);
-    const provider = this.getProvider();
-    const url = await provider.uploadFile(key, file.buffer, file.mimeType);
+const getStorageFileUrl = async (
+  key: string,
+  expiresInSeconds: number = 3600,
+  filename?: string,
+): Promise<string> => {
+  const provider = getStorageProvider();
+  return provider.getFileUrl(key, expiresInSeconds, filename);
+};
 
-    return { key, url };
-  }
+const storageFileExists = async (key: string): Promise<boolean> => {
+  const provider = getStorageProvider();
+  return provider.fileExists(key);
+};
 
-  public async delete(key: string): Promise<void> {
-    const provider = this.getProvider();
-    await provider.deleteFile(key);
-  }
+const getStorageFileMetadata = async (key: string): Promise<IFileMetadata> => {
+  const provider = getStorageProvider();
+  return provider.getFileMetadata(key);
+};
 
-  public async deleteMany(keys: string[]): Promise<void> {
-    const provider = this.getProvider();
-    await provider.deleteFiles(keys);
-  }
-
-  public async getUrl(
-    key: string,
-    expiresInSeconds: number = 3600,
-    filename?: string,
-  ): Promise<string> {
-    const provider = this.getProvider();
-    return provider.getFileUrl(key, expiresInSeconds, filename);
-  }
-
-  public async exists(key: string): Promise<boolean> {
-    const provider = this.getProvider();
-    return provider.fileExists(key);
-  }
-
-  public async getMetadata(key: string): Promise<IFileMetadata> {
-    const provider = this.getProvider();
-    return provider.getFileMetadata(key);
-  }
-}
-
-export const storageService = new StorageService();
+export const storageService = {
+  getProvider: getStorageProvider,
+  setMockProvider: setMockStorageProvider,
+  validateFile: validateStorageFile,
+  buildStorageKey,
+  upload: uploadFile,
+  delete: deleteStorageFile,
+  deleteMany: deleteManyStorageFiles,
+  getUrl: getStorageFileUrl,
+  exists: storageFileExists,
+  getMetadata: getStorageFileMetadata,
+};

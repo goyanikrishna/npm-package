@@ -15,10 +15,11 @@ export class ResendProvider implements IEmailProvider {
   public async sendEmail(options: ISendEmailOptions): Promise<void> {
     try {
       // Lazy load Resend SDK to make peer dependency optional
-      let ResendClient: typeof import('resend').Resend;
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      let ResendClient: any;
       try {
         const mod = await import('resend');
-        ResendClient = mod.Resend;
+        ResendClient = mod.Resend || (mod as any).default;
       } catch {
         throw new EmailError(
           'The "resend" package is not installed. Please install it using: npm install resend',

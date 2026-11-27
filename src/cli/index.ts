@@ -36,9 +36,11 @@ export const runCli = (args: string[] = process.argv.slice(2)): void => {
 
     for (const arg of args.slice(1)) {
       if (arg.startsWith('--config=')) {
-        configPath = path.resolve(process.cwd(), arg.split('=')[1]);
+        const val = arg.split('=')[1];
+        if (val) configPath = path.resolve(process.cwd(), val);
       } else if (arg.startsWith('--output=')) {
-        outputDir = path.resolve(process.cwd(), arg.split('=')[1]);
+        const val = arg.split('=')[1];
+        if (val) outputDir = path.resolve(process.cwd(), val);
       }
     }
 

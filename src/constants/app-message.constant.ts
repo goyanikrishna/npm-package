@@ -9,6 +9,8 @@ export const SuccessMessages = {
   LOGIN_SUCCESS: 'Login successful',
   TOKEN_REFRESH: 'Token refreshed successfully',
   TOKEN_REFRESH_SUCCESS: 'Token refreshed successfully',
+  FORGOT_PASSWORD:
+    'If an account exists with this email, a password reset link has been sent.',
   FORGOT_PASSWORD_SENT:
     'If an account exists with this email, a password reset link has been sent.',
   PASSWORD_RESET: 'Password has been reset successfully',

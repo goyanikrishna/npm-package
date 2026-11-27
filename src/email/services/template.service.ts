@@ -128,45 +128,48 @@ const DEFAULT_TEMPLATES: Record<string, string> = {
 `,
 };
 
-export class TemplateService {
-  private compiledCache = new Map<string, handlebars.TemplateDelegate>();
+const compiledCache = new Map<string, handlebars.TemplateDelegate>();
 
-  public render(templateName: string, context: Record<string, unknown> = {}): string {
-    const branding = configManager.getBranding();
-    const enrichedContext = {
-      ...branding,
-      currentYear: new Date().getFullYear(),
-      ...context,
-    };
+const renderTemplate = (
+  templateName: string,
+  context: Record<string, unknown> = {},
+): string => {
+  const branding = configManager.getBranding();
+  const enrichedContext = {
+    ...branding,
+    currentYear: new Date().getFullYear(),
+    ...context,
+  };
 
-    let templateSource: string | undefined = undefined;
+  let templateSource: string | undefined = undefined;
 
-    // Check custom template directory if specified
-    const customDir = configManager.getEmail()?.templates_dir;
-    if (customDir) {
-      const customPath = path.join(customDir, `${templateName}.handlebars`);
-      if (fs.existsSync(customPath)) {
-        templateSource = fs.readFileSync(customPath, 'utf8');
-      }
+  // Check custom template directory if specified
+  const customDir = configManager.getEmail()?.templates_dir;
+  if (customDir) {
+    const customPath = path.join(customDir, `${templateName}.handlebars`);
+    if (fs.existsSync(customPath)) {
+      templateSource = fs.readFileSync(customPath, 'utf8');
     }
-
-    // Fallback to built-in templates
-    if (!templateSource) {
-      templateSource = DEFAULT_TEMPLATES[templateName];
-    }
-
-    if (!templateSource) {
-      throw new EmailTemplateNotFoundError(templateName);
-    }
-
-    let compiled = this.compiledCache.get(templateName);
-    if (!compiled || customDir) {
-      compiled = handlebars.compile(templateSource);
-      this.compiledCache.set(templateName, compiled);
-    }
-
-    return compiled(enrichedContext);
   }
-}
 
-export const templateService = new TemplateService();
+  // Fallback to built-in templates
+  if (!templateSource) {
+    templateSource = DEFAULT_TEMPLATES[templateName];
+  }
+
+  if (!templateSource) {
+    throw new EmailTemplateNotFoundError(templateName);
+  }
+
+  let compiled = compiledCache.get(templateName);
+  if (!compiled || customDir) {
+    compiled = handlebars.compile(templateSource);
+    compiledCache.set(templateName, compiled);
+  }
+
+  return compiled(enrichedContext);
+};
+
+export const templateService = {
+  render: renderTemplate,
+};

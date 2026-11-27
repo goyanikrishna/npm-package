@@ -1,4 +1,4 @@
-// Singleton Config Manager for node-backend-toolkit
+// Config Manager for node-backend-toolkit
 import { ConfigurationError } from '../errors/config.errors';
 import {
   IAuthConfig,
@@ -14,92 +14,96 @@ import {
 } from './types';
 import { validateConfig } from './validation';
 
-class ConfigManager {
-  private static instance: ConfigManager;
-  private config: IBackendConfig | null = null;
+let currentConfig: IBackendConfig | null = null;
 
-  private constructor() {}
+const initializeConfig = (config: unknown): IBackendConfig => {
+  const validated = validateConfig(config);
+  currentConfig = validated;
+  return currentConfig;
+};
 
-  public static getInstance(): ConfigManager {
-    if (!ConfigManager.instance) {
-      ConfigManager.instance = new ConfigManager();
-    }
-    return ConfigManager.instance;
-  }
+const isConfigInitialized = (): boolean => {
+  return currentConfig !== null;
+};
 
-  public initialize(config: unknown): IBackendConfig {
-    const validated = validateConfig(config);
-    this.config = validated;
-    return this.config;
-  }
-
-  public isInitialized(): boolean {
-    return this.config !== null;
-  }
-
-  public get(): IBackendConfig {
-    if (!this.config) {
-      throw new ConfigurationError(
-        'Toolkit has not been initialized. Call initializeBackend(config) before accessing config.',
-      );
-    }
-    return this.config;
-  }
-
-  public getProject(): IProjectConfig {
-    return this.get().project;
-  }
-
-  public getDatabase(): IDatabaseConfig {
-    return this.get().database;
-  }
-
-  public getAuth(): IAuthConfig {
-    return this.get().auth;
-  }
-
-  public getUsers(): IUsersConfig {
-    return (
-      this.get().users || {
-        fields: [],
-        statuses: ['active', 'inactive', 'suspended'],
-        default_status: 'active',
-      }
+const getConfig = (): IBackendConfig => {
+  if (!currentConfig) {
+    throw new ConfigurationError(
+      'Toolkit has not been initialized. Call initializeBackend(config) before accessing config.',
     );
   }
+  return currentConfig;
+};
 
-  public getRoles(): IRoleConfig[] {
-    return this.get().roles || [];
-  }
+const getProjectConfig = (): IProjectConfig => {
+  return getConfig().project;
+};
 
-  public getSuperAdmin(): ISuperAdminConfig {
-    return this.get().superAdmin;
-  }
+const getDatabaseConfig = (): IDatabaseConfig => {
+  return getConfig().database;
+};
 
-  public getEmail(): IEmailConfig | undefined {
-    return this.get().email;
-  }
+const getAuthConfig = (): IAuthConfig => {
+  return getConfig().auth;
+};
 
-  public getBranding(): IBrandingConfig {
-    const branding = this.get().branding || {};
-    return {
-      project_name: branding.project_name || this.get().project.name,
-      company_name: branding.company_name || branding.project_name || this.get().project.name,
-      logo_url: branding.logo_url,
-      primary_color: branding.primary_color || '#4F46E5',
-      support_email: branding.support_email || 'support@example.com',
-      frontend_url: branding.frontend_url,
-    };
-  }
+const getUsersConfig = (): IUsersConfig => {
+  return (
+    getConfig().users || {
+      fields: [],
+      statuses: ['active', 'inactive', 'suspended'],
+      default_status: 'active',
+    }
+  );
+};
 
-  public getStorage(): IStorageConfig | undefined {
-    return this.get().storage;
-  }
+const getRolesConfig = (): IRoleConfig[] => {
+  return getConfig().roles || [];
+};
 
-  public reset(): void {
-    this.config = null;
-  }
-}
+const getSuperAdminConfig = (): ISuperAdminConfig => {
+  return getConfig().superAdmin;
+};
 
-export const configManager = ConfigManager.getInstance();
-export { ConfigManager };
+const getEmailConfig = (): IEmailConfig | undefined => {
+  return getConfig().email;
+};
+
+const getBrandingConfig = (): IBrandingConfig => {
+  const branding = getConfig().branding || {};
+  return {
+    project_name: branding.project_name || getConfig().project.name,
+    company_name: branding.company_name || branding.project_name || getConfig().project.name,
+    logo_url: branding.logo_url,
+    primary_color: branding.primary_color || '#4F46E5',
+    support_email: branding.support_email || 'support@example.com',
+    frontend_url: branding.frontend_url,
+  };
+};
+
+const getStorageConfig = (): IStorageConfig | undefined => {
+  return getConfig().storage;
+};
+
+const resetConfig = (): void => {
+  currentConfig = null;
+};
+
+export const configManager = {
+  initialize: initializeConfig,
+  isInitialized: isConfigInitialized,
+  get: getConfig,
+  getProject: getProjectConfig,
+  getDatabase: getDatabaseConfig,
+  getAuth: getAuthConfig,
+  getUsers: getUsersConfig,
+  getRoles: getRolesConfig,
+  getSuperAdmin: getSuperAdminConfig,
+  getEmail: getEmailConfig,
+  getBranding: getBrandingConfig,
+  getStorage: getStorageConfig,
+  reset: resetConfig,
+  getInstance: () => configManager,
+};
+
+export const ConfigManager = configManager;

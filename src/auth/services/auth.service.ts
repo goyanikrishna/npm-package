@@ -25,239 +25,252 @@ import { jwtService } from './jwt.service';
 import { passwordService } from './password.service';
 import { tokenService } from './token.service';
 
-export class AuthService {
-  public async register(
-    project_id: string,
-    dto: IRegisterDto,
-    clientMeta?: IClientMetadata,
-  ): Promise<ILoginResponse> {
-    passwordService.validatePolicy(dto.password);
+const generateTokenPair = async (
+  user_id: string,
+  project_id: string,
+  email: string,
+  role: string,
+  clientMeta?: IClientMetadata,
+): Promise<IAuthTokens> => {
+  const authConfig = configManager.getAuth();
+  const accessToken = jwtService.signAccessToken({
+    id: user_id,
+    project_id,
+    email,
+    role,
+  });
 
-    const first_name = (dto.first_name || '').trim();
-    const last_name = (dto.last_name || '').trim();
+  const session = await sessionService.createSession({
+    user_id,
+    project_id,
+    ip_address: clientMeta?.ip_address,
+    user_agent: clientMeta?.user_agent,
+  });
 
-    const safeUser = await userService.createUser(project_id, {
-      email: dto.email,
-      password: dto.password,
-      first_name,
-      last_name,
-      phone: dto.phone,
-      language: dto.language,
-      profile: dto.profile,
-    });
+  return {
+    access_token: accessToken,
+    refresh_token: session.refresh_token,
+    token_type: 'Bearer',
+    expires_in: authConfig.jwt.access_token_expiry || '15m',
+  };
+};
 
-    const tokens = await this.generateTokenPair(
-      safeUser.id!,
-      project_id,
-      safeUser.email!,
-      safeUser.role || 'user',
-      clientMeta,
-    );
+const register = async (
+  project_id: string,
+  dto: IRegisterDto,
+  clientMeta?: IClientMetadata,
+): Promise<ILoginResponse> => {
+  passwordService.validatePolicy(dto.password);
 
-    // Send welcome email asynchronously
-    emailService
-      .sendWelcomeEmail(safeUser.email!, {
-        first_name: safeUser.first_name || '',
-      })
-      .catch(() => {});
+  const first_name = (dto.first_name || '').trim();
+  const last_name = (dto.last_name || '').trim();
 
-    return {
-      user: safeUser,
-      tokens,
-    };
+  const safeUser = await userService.createUser(project_id, {
+    email: dto.email,
+    password: dto.password,
+    first_name,
+    last_name,
+    phone: dto.phone,
+    language: dto.language,
+    profile: dto.profile,
+  });
+
+  const tokens = await generateTokenPair(
+    safeUser.id!,
+    project_id,
+    safeUser.email!,
+    safeUser.role || 'user',
+    clientMeta,
+  );
+
+  // Send welcome email asynchronously
+  emailService
+    .sendWelcomeEmail(safeUser.email!, {
+      first_name: safeUser.first_name || '',
+    })
+    .catch(() => {});
+
+  return {
+    user: safeUser,
+    tokens,
+  };
+};
+
+const login = async (
+  project_id: string,
+  dto: ILoginDto,
+  clientMeta?: IClientMetadata,
+): Promise<ILoginResponse> => {
+  const user = await userService.getUserByEmail(project_id, dto.email, true);
+
+  if (!user) {
+    throw new InvalidCredentialsError();
   }
 
-  public async login(
-    project_id: string,
-    dto: ILoginDto,
-    clientMeta?: IClientMetadata,
-  ): Promise<ILoginResponse> {
-    const user = await userService.getUserByEmail(project_id, dto.email, true);
-
-    if (!user) {
-      throw new InvalidCredentialsError();
-    }
-
-    const isMatch = await user.checkIfPasswordMatch(dto.password);
-    if (!isMatch) {
-      throw new InvalidCredentialsError();
-    }
-
-    if (user.status !== 'active') {
-      throw new UserInactiveError(`Account is ${user.status}. Please contact administrator.`);
-    }
-
-    const tokens = await this.generateTokenPair(
-      user.id,
-      project_id,
-      user.email,
-      user.role,
-      clientMeta,
-    );
-
-    return {
-      user: userService.sanitizeUser(user),
-      tokens,
-    };
+  const isMatch = await user.checkIfPasswordMatch(dto.password);
+  if (!isMatch) {
+    throw new InvalidCredentialsError();
   }
 
-  public async refreshToken(
-    refreshToken: string,
-    clientMeta?: IClientMetadata,
-    project_id?: string,
-  ): Promise<IAuthTokens> {
-    const session = await sessionService.findValidSession(refreshToken, project_id);
-    const user = await userService.getUserById(session.user_id, session.project_id);
-
-    if (user.status !== 'active') {
-      await sessionService.revokeSession(refreshToken, project_id);
-      throw new UserInactiveError('User account is inactive');
-    }
-
-    // Revoke old session token (Token Rotation - Decision D04)
-    await sessionService.revokeSession(refreshToken, project_id);
-
-    // Issue new token pair
-    return this.generateTokenPair(user.id, session.project_id, user.email, user.role, clientMeta);
+  if (user.status !== 'active') {
+    throw new UserInactiveError(`Account is ${user.status}. Please contact administrator.`);
   }
 
-  public async forgotPassword(
-    project_id: string,
-    email: string,
-  ): Promise<{ token: string; email: string }> {
-    const user = await userService.getUserByEmail(project_id, email);
-    if (!user) {
-      // For security, don't reveal email existence; return success-like object
-      return { token: '', email };
-    }
+  const tokens = await generateTokenPair(
+    user.id,
+    project_id,
+    user.email,
+    user.role,
+    clientMeta,
+  );
 
-    const resetToken = await tokenService.createPasswordResetToken(project_id, email);
+  return {
+    user: userService.sanitizeUser(user),
+    tokens,
+  };
+};
 
-    // Send password reset email asynchronously
-    emailService
-      .sendForgotPasswordEmail(email, {
-        token: resetToken.token,
-      })
-      .catch(() => {});
+const refreshToken = async (
+  token: string,
+  clientMeta?: IClientMetadata,
+  project_id?: string,
+): Promise<IAuthTokens> => {
+  const session = await sessionService.findValidSession(token, project_id);
+  const user = await userService.getUserById(session.user_id, session.project_id);
 
-    return { token: resetToken.token, email };
+  if (user.status !== 'active') {
+    await sessionService.revokeSession(token, project_id);
+    throw new UserInactiveError('User account is inactive');
   }
 
-  public async resetPassword(dto: IResetPasswordDto, project_id?: string): Promise<void> {
-    const resetRecord = await tokenService.verifyPasswordResetToken(dto.token, project_id);
+  // Revoke old session token (Token Rotation - Decision D04)
+  await sessionService.revokeSession(token, project_id);
 
-    const user = await userService.getUserByEmail(resetRecord.project_id, resetRecord.email, true);
-    if (!user) {
-      throw new UserNotFoundError('User associated with reset token not found');
-    }
+  // Issue new token pair
+  return generateTokenPair(user.id, session.project_id, user.email, user.role, clientMeta);
+};
 
-    user.password = await passwordService.validateAndHash(dto.new_password);
-    await getDataSource().getRepository(User).save(user);
-
-    // Mark reset token used
-    await tokenService.markTokenUsed(resetRecord.id || resetRecord.token);
-
-    // Revoke all existing sessions for security
-    await sessionService.revokeAllUserSessions(user.id);
-
-    // Send confirmation email
-    emailService.sendPasswordResetSuccessEmail(user.email).catch(() => {});
+const forgotPassword = async (
+  project_id: string,
+  email: string,
+): Promise<{ token: string; email: string }> => {
+  const user = await userService.getUserByEmail(project_id, email);
+  if (!user) {
+    // For security, don't reveal email existence; return success-like object
+    return { token: '', email };
   }
 
-  public async changePassword(
-    user_id: string,
-    project_id: string,
-    dto: IChangePasswordDto,
-  ): Promise<void> {
-    const user = await userService.getUserById(user_id, project_id);
-    const userWithPassword = await userService.getUserByEmail(project_id, user.email, true);
+  const resetToken = await tokenService.createPasswordResetToken(project_id, email);
 
-    if (!userWithPassword) {
-      throw new UserNotFoundError();
-    }
+  // Send password reset email asynchronously
+  emailService
+    .sendForgotPasswordEmail(email, {
+      token: resetToken.token,
+    })
+    .catch(() => {});
 
-    const isMatch = await userWithPassword.checkIfPasswordMatch(dto.current_password);
-    if (!isMatch) {
-      throw new NotMatchException('Current password does not match');
-    }
+  return { token: resetToken.token, email };
+};
 
-    userWithPassword.password = await passwordService.validateAndHash(dto.new_password);
-    await getDataSource().getRepository(User).save(userWithPassword);
+const resetPassword = async (
+  dto: IResetPasswordDto,
+  project_id?: string,
+): Promise<void> => {
+  const resetRecord = await tokenService.verifyPasswordResetToken(dto.token, project_id);
 
-    // Revoke other user sessions
-    await sessionService.revokeAllUserSessions(user_id);
-
-    // Send alert email
-    emailService.sendPasswordChangedEmail(user.email).catch(() => {});
+  const user = await userService.getUserByEmail(resetRecord.project_id, resetRecord.email, true);
+  if (!user) {
+    throw new UserNotFoundError('User associated with reset token not found');
   }
 
-  public async logout(refreshToken: string, project_id?: string): Promise<void> {
-    if (refreshToken) {
-      await sessionService.revokeSession(refreshToken, project_id);
-    }
+  user.password = await passwordService.validateAndHash(dto.new_password);
+  await getDataSource().getRepository(User).save(user);
+
+  // Mark reset token used
+  await tokenService.markTokenUsed(resetRecord.id || resetRecord.token);
+
+  // Revoke all existing sessions for security
+  await sessionService.revokeAllUserSessions(user.id);
+
+  // Send confirmation email
+  emailService.sendPasswordResetSuccessEmail(user.email).catch(() => {});
+};
+
+const changePassword = async (
+  user_id: string,
+  project_id: string,
+  dto: IChangePasswordDto,
+): Promise<void> => {
+  const user = await userService.getUserById(user_id, project_id);
+  const userWithPassword = await userService.getUserByEmail(project_id, user.email, true);
+
+  if (!userWithPassword) {
+    throw new UserNotFoundError();
   }
 
-  public async deleteAccount(
-    user_id: string,
-    project_id: string,
-    passwordConfirmation: string,
-  ): Promise<void> {
-    const user = await userService.getUserByEmail(
-      project_id,
-      (await userService.getUserById(user_id, project_id)).email,
-      true,
-    );
-
-    if (!user) {
-      throw new UserNotFoundError();
-    }
-
-    if (user.role === 'super_admin') {
-      throw new SuperAdminProtectedError('Super Admin accounts cannot be deleted');
-    }
-
-    const isMatch = await user.checkIfPasswordMatch(passwordConfirmation);
-    if (!isMatch) {
-      throw new NotMatchException('Password confirmation does not match');
-    }
-
-    const userEmail = user.email;
-    await userService.deleteUser(user_id, project_id, user_id);
-    await sessionService.revokeAllUserSessions(user_id);
-
-    // Send farewell email
-    emailService.sendAccountDeletedEmail(userEmail).catch(() => {});
+  const isMatch = await userWithPassword.checkIfPasswordMatch(dto.current_password);
+  if (!isMatch) {
+    throw new NotMatchException('Current password does not match');
   }
 
-  private async generateTokenPair(
-    user_id: string,
-    project_id: string,
-    email: string,
-    role: string,
-    clientMeta?: IClientMetadata,
-  ): Promise<IAuthTokens> {
-    const authConfig = configManager.getAuth();
-    const accessToken = jwtService.signAccessToken({
-      id: user_id,
-      project_id,
-      email,
-      role,
-    });
+  userWithPassword.password = await passwordService.validateAndHash(dto.new_password);
+  await getDataSource().getRepository(User).save(userWithPassword);
 
-    const session = await sessionService.createSession({
-      user_id,
-      project_id,
-      ip_address: clientMeta?.ip_address,
-      user_agent: clientMeta?.user_agent,
-    });
+  // Revoke other user sessions
+  await sessionService.revokeAllUserSessions(user_id);
 
-    return {
-      access_token: accessToken,
-      refresh_token: session.refresh_token,
-      token_type: 'Bearer',
-      expires_in: authConfig.jwt.access_token_expiry || '15m',
-    };
+  // Send alert email
+  emailService.sendPasswordChangedEmail(user.email).catch(() => {});
+};
+
+const logout = async (
+  token: string,
+  project_id?: string,
+): Promise<void> => {
+  if (token) {
+    await sessionService.revokeSession(token, project_id);
   }
-}
+};
 
-export const authService = new AuthService();
+const deleteAccount = async (
+  user_id: string,
+  project_id: string,
+  passwordConfirmation: string,
+): Promise<void> => {
+  const user = await userService.getUserByEmail(
+    project_id,
+    (await userService.getUserById(user_id, project_id)).email,
+    true,
+  );
+
+  if (!user) {
+    throw new UserNotFoundError();
+  }
+
+  if (user.role === 'super_admin') {
+    throw new SuperAdminProtectedError('Super Admin accounts cannot be deleted');
+  }
+
+  const isMatch = await user.checkIfPasswordMatch(passwordConfirmation);
+  if (!isMatch) {
+    throw new NotMatchException('Password confirmation does not match');
+  }
+
+  const userEmail = user.email;
+  await userService.deleteUser(user_id, project_id, user_id);
+  await sessionService.revokeAllUserSessions(user_id);
+
+  // Send farewell email
+  emailService.sendAccountDeletedEmail(userEmail).catch(() => {});
+};
+
+export const authService = {
+  register,
+  login,
+  refreshToken,
+  forgotPassword,
+  resetPassword,
+  changePassword,
+  logout,
+  deleteAccount,
+};

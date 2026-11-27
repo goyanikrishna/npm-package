@@ -1,5 +1,6 @@
 // Auth Controller
 import { SuccessMessages } from '../../constants/app-message.constant';
+import { userService } from '../../user/services/user.service';
 import { asyncHandler } from '../../utils/async-handler.util';
 import { getClientMeta } from '../../utils/request.util';
 import { sendResponse } from '../../utils/response.util';
@@ -28,8 +29,8 @@ const refreshToken = asyncHandler(async (req: Request, res: Response): Promise<v
 const forgotPassword = asyncHandler(async (req: Request, res: Response): Promise<void> => {
   const { body, project_id } = req;
   const { email } = body;
-  await authService.forgotPassword(project_id!, email);
-  sendResponse(res, null, SuccessMessages.FORGOT_PASSWORD_SENT, 200);
+  const result = await authService.forgotPassword(project_id!, email);
+  sendResponse(res, result, SuccessMessages.FORGOT_PASSWORD, 200);
 });
 
 const resetPassword = asyncHandler(async (req: Request, res: Response): Promise<void> => {
@@ -40,14 +41,12 @@ const resetPassword = asyncHandler(async (req: Request, res: Response): Promise<
 
 const getProfile = asyncHandler(async (req: Request, res: Response): Promise<void> => {
   const { user, project_id } = req;
-  const { userService } = await import('../../user/services/user.service');
   const profile = await userService.getProfile(user!.id, project_id!);
   sendResponse(res, profile, SuccessMessages.PROFILE_RETRIEVED, 200);
 });
 
 const updateProfile = asyncHandler(async (req: Request, res: Response): Promise<void> => {
   const { body, user, project_id } = req;
-  const { userService } = await import('../../user/services/user.service');
   const updated = await userService.updateProfile(user!.id, project_id!, body);
   sendResponse(res, updated, SuccessMessages.PROFILE_UPDATED, 200);
 });
@@ -72,7 +71,20 @@ const deleteAccount = asyncHandler(async (req: Request, res: Response): Promise<
   sendResponse(res, null, SuccessMessages.ACCOUNT_DELETED, 200);
 });
 
-export const authController: Record<string, RequestHandler> = {
+export interface IAuthController {
+  register: RequestHandler;
+  login: RequestHandler;
+  refreshToken: RequestHandler;
+  forgotPassword: RequestHandler;
+  resetPassword: RequestHandler;
+  getProfile: RequestHandler;
+  updateProfile: RequestHandler;
+  changePassword: RequestHandler;
+  logout: RequestHandler;
+  deleteAccount: RequestHandler;
+}
+
+export const authController: IAuthController = {
   register,
   login,
   refreshToken,

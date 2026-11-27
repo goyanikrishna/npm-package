@@ -32,6 +32,9 @@ export const authorizeMiddleware = async (
     }
 
     const token = authHeader.split(' ')[1];
+    if (!token) {
+      throw new AuthException('Authentication token required');
+    }
     const payload = jwtService.verifyAccessToken(token);
 
     // Cross-project security isolation (R03 & D05)

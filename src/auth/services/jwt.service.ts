@@ -4,47 +4,49 @@ import { InvalidTokenError, TokenExpiredError } from '../../errors/auth.errors';
 import { IJwtPayload } from '../types';
 import jwt, { SignOptions } from 'jsonwebtoken';
 
-export class JwtService {
-  public signAccessToken(payload: IJwtPayload): string {
-    const authConfig = configManager.getAuth();
-    const { access_token_secret, access_token_expiry = '15m', issuer, audience } = authConfig.jwt;
+const signAccessToken = (payload: IJwtPayload): string => {
+  const authConfig = configManager.getAuth();
+  const { access_token_secret, access_token_expiry = '15m', issuer, audience } = authConfig.jwt;
 
-    const options: SignOptions = {
-      expiresIn: access_token_expiry as SignOptions['expiresIn'],
-    };
+  const options: SignOptions = {
+    expiresIn: access_token_expiry as SignOptions['expiresIn'],
+  };
 
-    if (issuer) options.issuer = issuer;
-    if (audience) options.audience = audience;
+  if (issuer) options.issuer = issuer;
+  if (audience) options.audience = audience;
 
-    return jwt.sign(payload, access_token_secret, options);
+  return jwt.sign(payload, access_token_secret, options);
+};
+
+const verifyAccessToken = (token: string): IJwtPayload => {
+  if (!token) {
+    throw new InvalidTokenError('Access token is required');
   }
 
-  public verifyAccessToken(token: string): IJwtPayload {
-    if (!token) {
-      throw new InvalidTokenError('Access token is required');
+  const authConfig = configManager.getAuth();
+  const { access_token_secret, issuer, audience } = authConfig.jwt;
+
+  try {
+    const decoded = jwt.verify(token, access_token_secret, {
+      issuer,
+      audience,
+    }) as IJwtPayload;
+
+    return decoded;
+  } catch (err: unknown) {
+    if (err instanceof jwt.TokenExpiredError) {
+      throw new TokenExpiredError('Access token has expired');
     }
-
-    const authConfig = configManager.getAuth();
-    const { access_token_secret, issuer, audience } = authConfig.jwt;
-
-    try {
-      const decoded = jwt.verify(token, access_token_secret, {
-        issuer,
-        audience,
-      }) as IJwtPayload;
-
-      return decoded;
-    } catch (err: unknown) {
-      if (err instanceof jwt.TokenExpiredError) {
-        throw new TokenExpiredError('Access token has expired');
-      }
-      throw new InvalidTokenError('Invalid access token');
-    }
+    throw new InvalidTokenError('Invalid access token');
   }
+};
 
-  public decode(token: string): IJwtPayload | null {
-    return jwt.decode(token) as IJwtPayload | null;
-  }
-}
+const decodeAccessToken = (token: string): IJwtPayload | null => {
+  return jwt.decode(token) as IJwtPayload | null;
+};
 
-export const jwtService = new JwtService();
+export const jwtService = {
+  signAccessToken,
+  verifyAccessToken,
+  decode: decodeAccessToken,
+};

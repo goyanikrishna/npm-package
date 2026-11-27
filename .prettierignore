@@ -20,9 +20,3 @@ coverage/
 # Logs
 logs/
 *.log
-
-# Database migrations
-src/database/migrations/
-
-# Handlebars templates
-src/resources/views/**/*.handlebars
